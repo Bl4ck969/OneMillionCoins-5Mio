@@ -1,6 +1,6 @@
 # Startet eine Prüfaufnahme (original | mod | inventar), wartet bis das Spiel sich beendet, setzt den Modus zurück
 # und zeigt die Mod-Zeilen aus dem BepInEx-Log.
-param([Parameter(Mandatory = $true)][ValidateSet("original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "fertigkeiten", "versionsschutz")][string]$Modus)
+param([Parameter(Mandatory = $true)][ValidateSet("original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "fertigkeiten", "versionsschutz", "bilder")][string]$Modus)
 
 $game = "D:\SteamLibrary\steamapps\common\One Million Coins"
 $cfg = Join-Path $game "BepInEx\config\de.bl4ck969.onemillioncoins.5mio.cfg"

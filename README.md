@@ -9,6 +9,8 @@ Das normale Spiel mit 1 Million Münzen bleibt unverändert.
 **5,000,000 real coins**, an extended skill tree (including a "Movement" branch with a jetpack), a faster elevator
 and a local leaderboard. The normal 1 million game is unchanged.*
 
+![Mit dem Jetpack über dem Schacht, bis Etage 12 abgegraben / Jetpack flight above the shaft, dug down to floor 12](bilder/titel.jpg)
+
 > **Mit KI geschrieben / written with AI:** Code und Installer entstanden mit Hilfe von Claude (Anthropic), getestet
 > im Spiel und mit automatischen Prüfläufen. Die Mod stammt nicht vom Entwickler des Spiels und wird von ihm nicht
 > unterstützt. Nutzung auf eigene Gefahr. / *Code and installer were written with the help of Claude (Anthropic) and
@@ -34,6 +36,14 @@ keeps its own save.*
 
 Lizenz / License: [MIT](LICENSE). Mitgeliefert / bundled: BepInEx 5.4.23.6 und Bestandteile, siehe
 [Drittanbieter.txt](installer/pakete/Drittanbieter.txt).
+
+## Bilder / Screenshots
+
+| | |
+|---|---|
+| ![Hauptmenü](bilder/menue.jpg)<br>Hauptmenü: Tresor „5 Millionen · Mod (offline)“ / *Main menu: vault "5 million"* | ![Münzhaufen](bilder/haufen.jpg)<br>Auf dem Haufen in Etage 12 / *On the pile on floor 12* |
+| ![Fertigkeiten](bilder/fertigkeiten.jpg)<br>Voller Fertigkeitsbaum mit dem Ast „Bewegung“ / *Full skill tree with the "Movement" branch* | ![Aufzug](bilder/aufzug.jpg)<br>Aufzug mit 25 Etagen, gesperrte nennen den Grund / *Elevator with 25 floors, locked ones show why* |
+| ![Abschluss](bilder/abschluss.jpg)<br>Abschluss: 5.000.000 Münzen, Platz in der lokalen Bestenliste / *Finish: 5,000,000 coins, rank in the local leaderboard* | ![Bestenliste](bilder/bestenliste.jpg)<br>Bestenliste nur auf diesem PC / *Leaderboard stored on this PC only* |
 
 ---
 
@@ -88,8 +98,8 @@ Prüfaufnahme (startet das Spiel selbst und beendet es wieder; **nicht während 
 .\werkzeuge\pruefung.ps1 -Modus mod
 ```
 
-Weitere Modi: `original`, `inventar`, `leistung`, `leistung-original`, `spielstand`, `fertigkeiten`, `versionsschutz`
-(Beschreibung in ERKENNTNISSE.md, Abschnitt 7). Die Testläufe steuern die Spielfigur selbst. Nach einem Spiel-Update
+Weitere Modi: `original`, `inventar`, `leistung`, `leistung-original`, `spielstand`, `fertigkeiten`, `versionsschutz`,
+`bilder` (Aufnahmen für dieses README; Beschreibung in ERKENNTNISSE.md, Abschnitt 7). Die Testläufe steuern die Spielfigur selbst. Nach einem Spiel-Update
 laufen sie nur mit `[Kompatibilitaet] UngepruefteVersion = true` (Ablauf in ERKENNTNISSE.md, Abschnitt 9).
 
 Einstellungen: `<Spiel>\BepInEx\config\de.bl4ck969.onemillioncoins.5mio.cfg`, Erläuterung in ERKENNTNISSE.md.

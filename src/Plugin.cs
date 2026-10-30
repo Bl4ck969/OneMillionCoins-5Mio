@@ -72,8 +72,9 @@ namespace OneMillionCoins5Mio
                     "\"original\" = unverändertes Gebäude, \"mod\" = 5-Mio.-Gebäude, \"inventar\" = Teile-Inventar des Originals, " +
                     "\"leistung\" = 60 s Abgraben simulieren und Bildrate messen, \"leistung-original\" = dasselbe im unveränderten Gebäude, " +
                     "\"spielstand\" = speichern, ins Menü, weiterspielen, \"fertigkeiten\" = geänderte Fertigkeiten und Taschenbank-Rückruf messen, " +
-                    "\"versionsschutz\" = so tun, als wäre die Spielversion nicht geprüft, Hauptmenü fotografieren. Alles offline.",
-                    new AcceptableValueList<string>("aus", "original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "fertigkeiten", "versionsschutz")));
+                    "\"versionsschutz\" = so tun, als wäre die Spielversion nicht geprüft, Hauptmenü fotografieren, " +
+                    "\"bilder\" = Aufnahmen für README und Release. Alles offline.",
+                    new AcceptableValueList<string>("aus", "original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "fertigkeiten", "versionsschutz", "bilder")));
             // Gespeicherte Werte bleiben; die Voreinstellungen gelten für neue Installationen (30.10.2026, vor der Veröffentlichung).
             CheckFolder = Config.Bind("Pruefung", "Ordner", System.IO.Path.Combine(Paths.BepInExRootPath, "pruefung"), "Zielordner der Prüfaufnahmen.");
             PerformanceAlways = Config.Bind("Prototyp", "LeistungAuchImNormalspiel", false,
@@ -108,6 +109,7 @@ namespace OneMillionCoins5Mio
             PoseBand.Apply(harmony);
             MenuPatches.Apply(harmony);
             Leaderboard.Apply(harmony);
+            CompletionPatches.Apply(harmony);
             SkillPatches.Apply(harmony);
             MovementBranch.Apply(harmony);
             Log.LogInfo($"Gepatchte Methoden: {System.Linq.Enumerable.Count(harmony.GetPatchedMethods())}.");

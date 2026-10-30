@@ -28,9 +28,12 @@ namespace OneMillionCoins5Mio
             public int coins;
         }
 
-        /// <summary>Prüfläufe schreiben in eine eigene Datei, damit die echte Liste frei von Testeinträgen bleibt.</summary>
+        /// <summary>
+        /// Prüfläufe schreiben in eine eigene Datei, damit die echte Liste frei von Testeinträgen bleibt. Der Prüfmodus „bilder“
+        /// zeigt die echte Liste und trägt nichts ein.
+        /// </summary>
         private static string FilePath => Path.Combine(OfflinePatches.ModFolder,
-            Plugin.CheckMode.Value == "aus" ? "bestenliste.tsv" : "bestenliste.pruefung.tsv");
+            Plugin.CheckMode.Value == "aus" || PictureRun.Requested ? "bestenliste.tsv" : "bestenliste.pruefung.tsv");
 
         // Eine Zeile je Lauf, Tabulator-getrennt. JsonUtility schreibt Klassen aus dem Mod-Assembly nur als "{}" (26.10.2026).
         private static string Line(Entry e) => string.Join("\t", e.run, e.vault.ToString(CultureInfo.InvariantCulture), e.date,
@@ -80,10 +83,10 @@ namespace OneMillionCoins5Mio
         /// <summary>Beim Abschluss eines Mod-Laufs eintragen; ein Lauf (Kennung + Durchgang) steht nur einmal in der Liste.</summary>
         internal static void Record(GameProgressManager progress, SaveManager saves)
         {
-            if (!ModState.Active || progress == null) return;
+            if (!ModState.Active || progress == null || PictureRun.Requested) return;
             try
             {
-                string run = saves != null ? Traverse.Create(saves).Field<string>("_statisticsRunId").Value : null;
+                string run = RunId(saves);
                 var entries = Load();
                 if (run != null && entries.Any(e => e.run == run && e.vault == progress.CompletedVaults)) return;
                 entries.Add(new Entry
@@ -102,6 +105,7 @@ namespace OneMillionCoins5Mio
                 File.WriteAllLines(temp, new[] { "# Lauf\tDurchgang\tDatum\tSekunden\tTest\tFertigkeitsbaum\tBefreit\tMünzen" }.Concat(entries.Select(Line)));
                 if (File.Exists(FilePath)) File.Replace(temp, FilePath, FilePath + ".bak");
                 else File.Move(temp, FilePath);
+                _placeKey = null;
                 Plugin.Log.LogInfo($"Bestenliste: Lauf eingetragen ({Time(progress.ActivePlayTimeSeconds)}, Durchgang {progress.CompletedVaults + 1}{(progress.TestingLoadoutActive ? ", Test" : "")}).");
             }
             catch (Exception e)
@@ -113,6 +117,32 @@ namespace OneMillionCoins5Mio
         /// <summary>Wertung wie im Original: erster Durchgang ohne Testmodus; Schnellste zuerst, alles andere danach.</summary>
         internal static List<Entry> Ordered(List<Entry> entries) =>
             entries.OrderBy(e => e.test || e.vault > 0 ? 1 : 0).ThenBy(e => e.seconds).ToList();
+
+        private static string RunId(SaveManager saves) => saves != null ? Traverse.Create(saves).Field<string>("_statisticsRunId").Value : null;
+
+        /// <summary>Platz wie in der Liste (nur gewertete Läufe zählen); 0 = nicht gewertet oder nicht eingetragen.</summary>
+        internal static int PlaceOf(List<Entry> entries, string run, int vault)
+        {
+            var ranked = Ordered(entries).Where(e => !e.test && e.vault == 0).ToList();
+            return ranked.FindIndex(e => e.run == run && e.vault == vault) + 1;
+        }
+
+        private static string _placeKey;
+        private static int _place;
+
+        /// <summary>Platz des laufenden Durchgangs für den Abschlussdialog; liest die Datei nur, wenn sich Lauf oder Liste ändern.</summary>
+        internal static int Place(GameProgressManager progress, SaveManager saves)
+        {
+            string run = RunId(saves);
+            if (run == null) return 0;
+            string key = run + "/" + progress.CompletedVaults;
+            if (key != _placeKey)
+            {
+                _place = PlaceOf(Load(), run, progress.CompletedVaults);
+                _placeKey = key;
+            }
+            return _place;
+        }
 
         private static bool OpenPrefix(MainMenuUI __instance)
         {

@@ -357,6 +357,32 @@ namespace OneMillionCoins5Mio
         /// </summary>
         private static readonly System.Reflection.MethodInfo Tick = AccessTools.Method(typeof(GranularPileModel), "TickInventory");
 
+        /// <summary>
+        /// Wie beim Spielen bis zu einem Boden abgraben: die Etage ganz absaugen, Durchgehendes (Schacht, Landeplatz) bis 0,3 m
+        /// unter den Boden ("excavate its shaft and landing"), und die Münzen dazwischen nachrutschen lassen, bis nichts mehr fließt.
+        /// </summary>
+        internal static int DigTo(GranularCoinPile pile, float floorY)
+        {
+            var model = pile.Model;
+            float floorLocal = pile.transform.InverseTransformPoint(new Vector3(0f, floorY, 0f)).y;
+            int rounds = 0;
+            for (bool busy = true; busy && rounds < 4000; rounds++)
+            {
+                busy = false;
+                for (int layer = 0; layer < model.LayerCount; layer++)
+                {
+                    bool open = float.IsPositiveInfinity(model.LayerCeiling(layer));
+                    if (!open && model.LayerBase(layer) >= floorLocal - 0.5f)
+                        while (model.ExtractLayerTop(layer, out _)) busy = true;
+                    else if (open)
+                        while (model.LayerCounts[layer] > 0 && model.LayerCenter(layer).y > floorLocal - 0.3f && model.ExtractLayerTop(layer, out _)) busy = true;
+                }
+                Tick.Invoke(model, null);
+                if (model.LastMoved > 0) busy = true;
+            }
+            return rounds;
+        }
+
         private void CheckElevatorEmpty()
         {
             var elevator = FindObjectsByType<CargoElevator>(FindObjectsInactive.Include).FirstOrDefault();
@@ -370,24 +396,7 @@ namespace OneMillionCoins5Mio
             foreach (int i in order)
             {
                 float floorY = elevator.FloorPosition(i).y;
-                // Wie beim Spielen: die Etage ganz absaugen, Durchgehendes (Schacht, Landeplatz) bis 0,3 m unter den Boden ("excavate its shaft and landing"),
-                // und die Münzen dazwischen nachrutschen lassen, bis nichts mehr fließt.
-                float floorLocal = pile.transform.InverseTransformPoint(new Vector3(0f, floorY, 0f)).y;
-                int rounds = 0;
-                for (bool busy = true; busy && rounds < 4000; rounds++)
-                {
-                    busy = false;
-                    for (int layer = 0; layer < model.LayerCount; layer++)
-                    {
-                        bool open = float.IsPositiveInfinity(model.LayerCeiling(layer));
-                        if (!open && model.LayerBase(layer) >= floorLocal - 0.5f)
-                            while (model.ExtractLayerTop(layer, out _)) busy = true;
-                        else if (open)
-                            while (model.LayerCounts[layer] > 0 && model.LayerCenter(layer).y > floorLocal - 0.3f && model.ExtractLayerTop(layer, out _)) busy = true;
-                    }
-                    Tick.Invoke(model, null);
-                    if (model.LastMoved > 0) busy = true;
-                }
+                int rounds = DigTo(pile, floorY);
                 bool accessible = elevator.IsLayerAccessible(i);
                 bool landingClear = elevator.IsLandingClear(i);
                 // Was steht körperlich im Schacht über dieser Etage (ohne Aufzug selbst)? Im Original nur Schachtrahmen.

@@ -25,6 +25,9 @@ namespace OneMillionCoins5Mio
             harmony.Patch(AccessTools.Method(typeof(MainMenuUI), "DrawConfirmation"),
                 prefix: new HarmonyMethod(typeof(MenuPatches), nameof(ConfirmationPrefix)), postfix: new HarmonyMethod(typeof(MenuPatches), nameof(ConfirmationPostfix)));
             harmony.Patch(AccessTools.Method(typeof(SaveSlots), "Label"), prefix: new HarmonyMethod(typeof(MenuPatches), nameof(SlotLabelPrefix)));
+            // Prüfmodus „bilder“: Aufnahmen fürs README ohne die Steam-Karte (Name, Bild, Bestzeiten) rechts im Menü.
+            if (PictureRun.Requested)
+                harmony.Patch(AccessTools.Method(typeof(MainMenuUI), "DrawPlayerRecords"), prefix: new HarmonyMethod(typeof(MenuPatches), nameof(SkipPrefix)));
         }
 
         /// <summary>Nur im Hauptmenü und solange kein Mod-Lauf aktiv ist, sonst gilt überall das Spiel.</summary>
@@ -48,10 +51,12 @@ namespace OneMillionCoins5Mio
             {
                 _logged = true;
                 Plugin.Log.LogInfo($"Tresor-Auswahl im Hauptmenü aktiv ({(ModSelected ? "5 Millionen" : "Original")}).");
-                if ((Diagnostics.Requested || LoadTest.Requested || SaveTest.Requested || SkillTest.Requested) && ModState.OfflineGuardsReady)
+                if ((Diagnostics.Requested || LoadTest.Requested || SaveTest.Requested || SkillTest.Requested || PictureRun.Requested) && ModState.OfflineGuardsReady)
                 {
                     Plugin.Log.LogInfo($"Prüfmodus \"{Plugin.CheckMode.Value}\": starte automatisch.");
-                    Plugin.Launch();
+                    // „bilder“ nimmt zuerst das Menü auf und startet den Lauf selbst.
+                    if (PictureRun.Requested) PictureRun.Begin();
+                    else Plugin.Launch();
                     return;
                 }
             }
@@ -101,8 +106,10 @@ namespace OneMillionCoins5Mio
 
         private static void CaptionPostfix(ref string __result)
         {
-            if (ModSelected && InMenu) __result = (OfflinePatches.Testing ? " · Test" : "") + " · 5 Mio.";
+            if (ModSelected && InMenu) __result = (OfflinePatches.Testing && !PictureRun.Requested ? " · Test" : "") + " · 5 Mio.";
         }
+
+        private static bool SkipPrefix() => false;
 
         private static void ConfirmationPrefix() => _inConfirmation = true;
 

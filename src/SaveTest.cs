@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -85,6 +86,32 @@ namespace OneMillionCoins5Mio
             var progress = Traverse.Create(FindAnyObjectByType<GameSceneController>()).Field<GameProgressManager>("progress").Value;
             Leaderboard.Record(progress, saves);
             hud = FindAnyObjectByType<GoldDiggerHUD>();
+
+            // 6. Abschlussdialog im Mod-Modus: Münzzahl des Haufens, kein roter Kasten, Status der Offline-Liste.
+            // Der Test-Spielstand ist im Freispiel; für die Aufnahme kurz erster Durchgang, damit der Status der Offline-Liste erscheint.
+            var vaults = Traverse.Create(progress).Property("CompletedVaults");
+            int completed = vaults.GetValue<int>();
+            vaults.SetValue(0);
+            hud.ShowCompletionResults();
+            yield return Shot("abschluss.png");
+            ModText.ForceEnglish = true;
+            yield return Shot("abschluss_en.png");
+            ModText.ForceEnglish = false;
+            vaults.SetValue(completed);
+            yield return Shot("abschluss_freispiel.png");
+            Plugin.Log.LogInfo($"Spielstandtest: Abschluss \"{CompletionPatches.CoinsLine(CompletionPatches.CoinsOriginal)}\" / \"{CompletionPatches.Status(null, hud)}\", " +
+                $"roter Kasten {(CompletionPatches.Reason("Grund") == null ? "aus" : "AN")}");
+            var sample = new List<Leaderboard.Entry>
+            {
+                new Leaderboard.Entry { run = "t", seconds = 50, test = true },
+                new Leaderboard.Entry { run = "a", seconds = 200 },
+                new Leaderboard.Entry { run = "b", seconds = 100 },
+                new Leaderboard.Entry { run = "b", vault = 1, seconds = 10 },
+            };
+            Plugin.Log.LogInfo($"Spielstandtest: Platz b {Leaderboard.PlaceOf(sample, "b", 0)} (Soll 1), a {Leaderboard.PlaceOf(sample, "a", 0)} (Soll 2), " +
+                $"Testlauf {Leaderboard.PlaceOf(sample, "t", 0)} (Soll 0), Durchgang 2 {Leaderboard.PlaceOf(sample, "b", 1)} (Soll 0)");
+            Traverse.Create(hud).Field("_completionOpen").SetValue(false);
+
             AccessTools.Method(typeof(GoldDiggerHUD), "ReturnToMenu").Invoke(hud, new object[] { true });
             until = Time.realtimeSinceStartup + 30f;
             while (SceneManager.GetActiveScene().path != GameNavigation.MenuScene && Time.realtimeSinceStartup < until) yield return null;

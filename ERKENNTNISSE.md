@@ -1,6 +1,6 @@
 # One Million Coins – Modus „5 Mio. Münzen“
 
-Stand, Entscheidungen, Erkenntnisse und nächste Schritte. **Stand: 30.10.2026, vormittags.** Dieses Dokument ist der Einstieg für die Fortsetzung.
+Stand, Entscheidungen, Erkenntnisse und nächste Schritte. **Stand: 30.10.2026, abends.** Dieses Dokument ist der Einstieg für die Fortsetzung.
 
 Projekt: `E:\Setups\Spiele\Mods\One Million Coins` (bis 25.10.2026 `E:\Setups\OneMillionCoins-100M`). BepInEx-5-Plugin `OneMillionCoins5Mio` (bis 30.10.2026 `OneMillionCoins100M`), Version 1.0.0, MIT-Lizenz, lokales Git-Repository (Abschnitt 8).
 
@@ -8,13 +8,21 @@ Projekt: `E:\Setups\Spiele\Mods\One Million Coins` (bis 25.10.2026 `E:\Setups\On
 
 ## 1. Kurz: Wo stehen wir, was kommt als Nächstes
 
+**30.10.2026, abends – Installer am echten Spiel, Abschlussdialog, Bilder fürs README:**
+- **Installer** zum ersten Mal an Bl4ck969s Spielordner (17:43, per Fenster aus dem Release-Entwurf): Dateien byte-gleich mit der Handinstallation, 229/229 Steam-Dateien unverändert. Die vorherige Handinstallation ist außerhalb des Spielordners gesichert (löschen nur auf sein Wort).
+- **Abschlussdialog** (`CompletionPatches.cs`; Bl4ck969: „der Abschlussscreenshot ist falsch, ich habe ja 5 Mio eingesammelt“): Das Spiel schreibt fest „1,000,000 coins collected“ und zeigt rot „nicht eingereicht“, weil `SpeedrunSubmission.CompletionIssue` genau 1.000.000 Münzen verlangt. Im Mod-Modus jetzt die Münzzahl des Haufens in der Übersetzung des Spiels, kein roter Kasten, statt des Steam-Status „Platz N in deiner Bestenliste auf diesem PC“ (Testlauf: „nicht gewertet“). 5 Stellen per Transpiler, 102 gepatchte Methoden. ⚠ Das erste Suchmuster `1([^0-9]?)000\1000` traf nie: .NET liest `\1000` als Oktalzeichen, nicht als Rückverweis plus „000“ – aufgefallen nur am Bild (englische Zeile im deutschen Spiel). Benannte Gruppe `\k<sep>`.
+- **Prüfmodus `bilder`** (`PictureRun.cs`; Bl4ck969: „Wir brauchen noch Screenshots“): nimmt Menü und Bestenliste auf, startet den Lauf auf dem Test-Spielstand, schaltet den Testmodus aus (keine Testknöpfe im Baum), gräbt bis Etage 12 ab, fotografiert Baum, Schacht, Jetpack-Flug, Haufen, Aufzug und Abschluss (bester echter Lauf aus `bestenliste.tsv`, nur gelesen) und beendet ohne Speichern. Die Steam-Karte im Menü (Name, Bestzeiten) wird nur in diesem Modus weggelassen (103 gepatchte Methoden). Auswahl verkleinert in `bilder\` (1600×900), eingebunden im README.
+  - ⚠ Nach der Rückkehr **ohne Speichern** ins Menü stand oben links über 30 s „Bankverlauf wird geladen …“; nach einer Rückkehr mit Speichern nicht, und Bl4ck969 sieht im Spiel „Eingezahlt“. Deshalb nimmt der Modus das Menü vor dem Lauf auf. Ursache nicht geklärt (Vermutung: eine während des Mod-Laufs gesperrte Anfrage an die Sammler-Bestenliste).
+  - ⚠ **Ein geänderter Spielstand zwischen zwei Prüfläufen war Bl4ck969 selbst:** `spielstand.json` um 20:48:16, eine eigene Spielsitzung bis 20:48:50 (`Player-prev.log`), die Prüfläufe davor endeten 20:45:50, danach begann der nächste 20:49:17. Vor jedem Alarm Zeitstempel und `Player-prev.log` ansehen; der alte Stand liegt dann als `.bak` daneben.
+  - Gemessen: gesetzte Spielzeit läuft bei den langsamen Bildern des großen Haufens bis zur Aufnahme 0,2 s weiter → `Time.timeScale = 0` für die Aufnahme. Verdiente Punkte rechnet das Spiel bei jeder Münze neu → ausgegebene Punkte erst direkt vor der Aufnahme angleichen. Ein Tooltip folgt dem echten Mauszeiger → `SetCursorPos` aus dem Baum.
+
 **30.10.2026, ~08:50 – Release 1.0.0 vorbereitet** (Bl4ck969: „ja bitte alles erledigen“; meine Empfehlungen umgesetzt):
 - **Name** `OneMillionCoins5Mio` statt „100M“ (Abschnitt 8), **Version 1.0.0**, **MIT-Lizenz** (`LICENSE`, auch im Installer unter „Lizenzen“).
 - **Englisch:** Tresor-Auswahl, Bestenliste, Bestätigungsdialog folgen der Spielsprache (`ModText`; Deutsch, sonst Englisch – das Spiel hat 7 Sprachen, Fertigkeiten und Aufzugsmenü waren schon zweisprachig). Der Versionshinweis folgt der Windows-Sprache (kein Spielcode auf ungeprüften Ständen).
 - **Release-Paket** `release\OMC-5Mio-1.0.0.zip` über `werkzeuge\release.py` (Installer, LIESMICH de/en, Lizenzen, SHA-256). Plugin im Paket byte-gleich mit dem im Spiel geprüften.
 - Geprüft im Spiel: `versionsschutz` (0 Patches der Mod), `fertigkeiten` (101 Patches, Werte wie vorher), `spielstand` (Menü und Bestenliste deutsch und mit `ForceEnglish` englisch, passt ohne Überlauf; im Test bleiben „RANG/ZEIT/ZURÜCK“ deutsch, weil das deutsch eingestellte Spiel bekannte englische Wörter selbst übersetzt). Installer-Tests 8/8 (neu: alter Plugin-Ordner wird abgelehnt). Bl4ck969s Spielstand und Einstellungen unverändert.
 - **Steam-Seite** (30.10.2026): Entwickler und Publisher „OYU Games“, erschienen 13.10.2026; zu Mods, Workshop, EULA, Anti-Cheat keine Aussage, im Netz auch nichts gefunden.
-- **Veröffentlicht als öffentliches GitHub-Repo** [Bl4ck969/OneMillionCoins-5Mio](https://github.com/Bl4ck969/OneMillionCoins-5Mio) (Entscheidung 30.10.2026: öffentlich, ohne Vornamen, frische Historie). Release v1.0.0 liegt als **Entwurf** bereit (ZIP, SHA-256 `8d46e06a…`, auf GitHub gegengeprüft) und wird erst nach Bl4ck969s Spieltest von Ast Bewegung/Jetpack/Automatengruppen freigegeben: `gh release edit v1.0.0 --repo Bl4ck969/OneMillionCoins-5Mio --draft=false`. Dependabot-Alerts an (tägliches Audit), Themen `bepinex`, `unity-mod`, `one-million-coins`, `game-mod`. Ein `pre-push`-Hook (`.git/hooks`, nur lokal) sperrt den Zweig `archiv-lokal`. Die DLL im Paket (`945dac…`) ist mit allen drei Prüfläufen (`versionsschutz`, `fertigkeiten`, `spielstand`) im Spiel geprüft und dort installiert. Restpunkte ohne Kollision (Etage 22/23) stehen in der LIESMICH.
+- **Veröffentlicht als öffentliches GitHub-Repo** [Bl4ck969/OneMillionCoins-5Mio](https://github.com/Bl4ck969/OneMillionCoins-5Mio) (Entscheidung 30.10.2026: öffentlich, ohne Vornamen, frische Historie). Release v1.0.0 liegt als **Entwurf** bereit (ZIP seit 30.10.2026 abends SHA-256 `8a4689d9…`, mit Abschlussdialog-Fix) und wird erst nach Bl4ck969s Spieltest von Ast Bewegung/Jetpack/Automatengruppen freigegeben: `gh release edit v1.0.0 --repo Bl4ck969/OneMillionCoins-5Mio --draft=false`. Dependabot-Alerts an (tägliches Audit), Themen `bepinex`, `unity-mod`, `one-million-coins`, `game-mod`. Ein `pre-push`-Hook (`.git/hooks`, nur lokal) sperrt den Zweig `archiv-lokal`. Die DLL im Paket (`088791…`) ist mit den Prüfläufen `spielstand`, `fertigkeiten`, `versionsschutz`, `mod` und `bilder` im Spiel geprüft und dort installiert (vorher `945dac…`, Abschlussdialog mit 1.000.000). Restpunkte ohne Kollision (Etage 22/23) stehen in der LIESMICH.
 
 **30.10.2026, vormittags – Spiel-Updates, Installer, Versionsschutz** (Bl4ck969: „Was passiert bei Updates? … Installer für eine Veröffentlichung“; Einzelheiten Abschnitt 9):
 - **Steam-Updates lassen die Mod-Dateien in Ruhe, und keine Originaldatei fehlt.** Gemessen gegen Steams Dateiliste (`depotcache\5258341_<manifest>.manifest`): 229 von 229 Originaldateien byte-gleich (SHA-1), zusätzlich nur die 27 Dateien von BepInEx und Mod. Das Update vom 29.10. tauschte 6 Spieldateien und keine Mod-Datei; keiner der Mod-Namen steht in Steams Liste. Die Gefahr liegt woanders: Nach einem Update **lief die Mod ungeprüft auf neuem Code weiter**.
@@ -282,6 +290,7 @@ Erledigt am 25.10.: Menü-Eintrag lag über „Mitwirkende“ (jetzt rechts nebe
 - **Modus „leistung“:** 60 s Abgraben wie mit vollem Baum, Bildrate und Zeit je Haufen-Teil (Fließen, Lagen, Seiten, Darstellung, Kollision), **Bildvergleich** mit und ohne Sichtbarkeits-Band (6 Richtungen, abweichende Pixel; Rest nur Magnet in der Hand und HUD), Bergtest (Graben unter den Füßen). „leistung-original“ misst dasselbe im unveränderten Gebäude.
 - **Modus „spielstand“:** speichern (Zeit, Größe) → Pause-Weg ins Hauptmenü → Menü mit beiden Tresor-Einstellungen fotografieren → Weiter → geladen und speicherbar? → Bestenliste eintragen (Prüfdatei) und fotografieren. Speichert in `spielstand.test.json` (seit 29.10. nur noch Prüfläufe; Bl4ck969 spielt mit `spielstand.json`).
 - **Modus „fertigkeiten“** (seit 29.10.2026): Goldfluss, Filialleiter, Bankradius, Sammel- und Rutschenrate, deutsche Texte; Taschenbank 8 m entfernt abstellen und mit [4] zurückholen (Bilder `bank_abgestellt.png`, `bank_zurueck.png`); Ast Bewegung (Katalog, Spalten, Boni, Bild `baum.png`), Jetpack 0,6 s mit simulierter Sprungtaste (`MovementBranch.HoldJumpForTest`, Bild `jetpack_feld.png`); danach ohne Speichern ins Hauptmenü und Originalwerte prüfen (238 Skills, 7 Spalten).
+- **Modus „bilder“** (seit 30.10.2026): Aufnahmen fürs README, siehe Abschnitt 1; schreibt nach `pruefung\bilder\`, speichert nichts, trägt nichts in die Bestenliste ein (liest die echte). Neue README-Bilder: Lauf fahren, Auswahl mit 1600×900 nach `bilder\` (JPG).
 - **Modus „versionsschutz“** (seit 30.10.2026): spielt eine nicht geprüfte Spielversion vor; das Plugin setzt keinen Patch, `VersionNotice` fotografiert das Hauptmenü (`hauptmenue.png`), zählt die Patches je Besitzer (Soll: 0 der Mod) und beendet das Spiel. Gehört nach jeder Änderung an `Plugin.Awake` oder `ReleaseInfo` dazu.
 - **Stand 25.10.:**
   - unsichtbare Kollider: nur Lampenhalter, 2 je Etage
@@ -316,6 +325,8 @@ Erledigt am 25.10.: Menü-Eintrag lag über „Mitwirkende“ (jetzt rechts nebe
 | `SkillPatches.cs` | Fertigkeiten im Mod-Modus: Goldfluss/Filialleiter +300 %, Bankradius 15 m, [4] holt die Taschenbank zurück |
 | `MovementBranch.cs` | Ast „Bewegung“ (Lauftempo, Sprunghöhe, Jetpack) samt HUD-Anpassungen für den 8. Ast |
 | `SkillTest.cs` | Prüfmodus „fertigkeiten“ |
+| `CompletionPatches.cs` | Abschlussdialog im Mod-Modus: Münzzahl, kein roter Kasten, Platz in der Offline-Bestenliste |
+| `PictureRun.cs` | Prüfmodus „bilder“ (Aufnahmen fürs README) |
 | `ReleaseInfo.cs` | Mod-Version, GUID, Spielstand-Ordner und **geprüfte Spielstände** – auch vom Installer mitkompiliert |
 | `VersionNotice.cs` | Hinweis im Hauptmenü bei nicht geprüfter Spielversion; Prüfmodus „versionsschutz“ |
 | `ModText.cs` | Texte der Mod nach Spielsprache (Deutsch, sonst Englisch); `ForceEnglish` nur für Prüfläufe |
@@ -340,7 +351,7 @@ Erledigt am 25.10.: Menü-Eintrag lag über „Mitwirkende“ (jetzt rechts nebe
 | `[Aufzug]` | `Geschwindigkeit` | Höchstgeschwindigkeit in m/s (7, wie die Spitze im Original) |
 | | `Anfahrzeit` | Sekunden bis zur Höchstgeschwindigkeit, ebenso zum Bremsen (1,5) |
 | | `LeistungAuchImNormalspiel` | Leistungsprotokoll im Normalspiel |
-| `[Pruefung]` | `Modus` | aus / original / mod / inventar / leistung / leistung-original / spielstand / fertigkeiten / versionsschutz |
+| `[Pruefung]` | `Modus` | aus / original / mod / inventar / leistung / leistung-original / spielstand / fertigkeiten / versionsschutz / bilder |
 | | `Ordner` | Zielordner der Prüfaufnahmen |
 
 Veraltete Schlüssel ohne Wirkung: `EtagenBausteine`, `ZusaetzlicheEtagen`. `AlleFertigkeiten`/`TestPunkte` am 29.10. aus Code und Konfiguration entfernt.
