@@ -1,0 +1,130 @@
+One Million Coins – „5 Mio. Münzen“ (Mod) {VERSION}
+=====================================================
+English version below.
+
+Was ist das?
+------------
+Eine inoffizielle Fan-Mod für „One Million Coins“ (Steam). Sie fügt dem Spiel einen eigenen Modus hinzu: ein Tresor
+mit 25 Etagen und genau 5.000.000 Münzen, die nach unten höher werden, dazu ein erweiterter Fertigkeitsbaum
+(u. a. Ast „Bewegung“ mit Jetpack), ein schnellerer Aufzug und eine eigene, nur lokale Bestenliste.
+Das normale Spiel mit 1 Million Münzen bleibt unverändert.
+
+Die Mod wurde mit Hilfe künstlicher Intelligenz (Claude von Anthropic) geschrieben. Sie stammt nicht vom
+Entwickler des Spiels und wird von ihm nicht unterstützt. Nutzung auf eigene Gefahr.
+
+Voraussetzungen
+---------------
+- Windows 10 oder 11, 64 Bit
+- „One Million Coins“ von Steam in Version {SPIELVERSION} (steht unten rechts im Hauptmenü)
+
+Installieren
+------------
+1. Spiel beenden.
+2. OMC-5Mio-Installer.exe starten. Er findet das Spiel über Steam (sonst „Ändern …“ und den Spielordner wählen).
+3. „Installieren …“, den Hinweis lesen, Haken setzen, „Installieren“.
+4. Im Spiel: Hauptmenü, rechts neben „Speicherplatz“ die Auswahl „Tresor“ auf „5 Millionen · Mod (offline)“
+   stellen, dann „Neues Spiel“.
+
+Windows kann beim Start warnen („Der Computer wurde durch Windows geschützt“), weil das Programm nicht signiert
+ist. Dann „Weitere Informationen“ → „Trotzdem ausführen“. Ob die Datei unverändert ist, zeigt die Prüfsumme in
+SHA256SUMS.txt (PowerShell: Get-FileHash .\OMC-5Mio-Installer.exe).
+
+Was der Installer tut
+---------------------
+- Er legt den Mod-Lader BepInEx 5.4.23.6 (nur wenn noch keiner da ist) und die Mod in den Spielordner.
+  Dateien des Spiels verändert er nicht. Müsste er eine vorhandene Datei überschreiben, sichert er sie vorher.
+- Jede Änderung steht im Ordner „5Mio-Mod-Installation“ im Spielordner – das braucht die Deinstallation.
+
+Deinstallieren
+--------------
+OMC-5Mio-Installer.exe starten → „Deinstallieren …“. Alles wird entfernt und der Originalzustand des Spielordners
+wiederhergestellt; danach vergleicht der Installer den Ordner mit Steams Dateiliste. Er fragt, ob auch die
+Spielstände der Mod gelöscht werden sollen.
+Ohne Installer von Hand (nur wenn BepInEx mit der Mod kam): im Spielordner „BepInEx“, „winhttp.dll“,
+„doorstop_config.ini“, „.doorstop_version“ und „5Mio-Mod-Installation“ löschen.
+
+Spiel-Updates
+-------------
+Steam-Updates lassen die Mod-Dateien in Ruhe. Die Mod prüft aber bei jedem Start die Spielversion: Ist es nicht
+Version {SPIELVERSION}, schaltet sie sich ab (Hinweis unten links im Hauptmenü) und das Spiel läuft unverändert,
+bis es eine passende Fassung der Mod gibt.
+
+Spielstände und Online-Dienste
+------------------------------
+- Der Modus „5 Millionen“ sendet nichts an Steam: keine Bestenlisten, keine Erfolge, keine Steam Cloud.
+- Eigener Spielstand: %LOCALAPPDATA%\OneMillionCoins-5Mio\ (Spielstand und lokale Bestenliste).
+  Der normale Spielstand des Spiels wird nicht angefasst.
+- Gespeichert wird beim Verlassen über das Pausemenü.
+
+Bekannte Einschränkungen
+------------------------
+- An wenigen Stellen fehlt Kollision (Etage 22/23: ein Handlaufstab, ein Gitterfuß an einer Treppenecke).
+- Leistung: auf dem Entwicklungsrechner rund 70 Bilder pro Sekunde beim Graben; schwächere Rechner sind nicht getestet.
+- Die Texte der Mod gibt es auf Deutsch und Englisch (nach der Spielsprache).
+
+Lizenz: MIT (LICENSE.txt). Mitgelieferte Bestandteile: Drittanbieter.txt.
+
+
+One Million Coins – "5 Million Coins" (mod) {VERSION}
+======================================================
+
+What is it?
+-----------
+An unofficial fan mod for "One Million Coins" (Steam). It adds a mode of its own: a vault with 25 floors and exactly
+5,000,000 coins, with floors getting taller further down, plus an extended skill tree (including a "Movement"
+branch with a jetpack), a faster elevator and a local-only leaderboard. The normal 1 million game is unchanged.
+
+The mod was written with the help of artificial intelligence (Claude by Anthropic). It is not made or supported by
+the game's developer. Use at your own risk.
+
+Requirements
+------------
+- Windows 10 or 11, 64-bit
+- "One Million Coins" from Steam, version {SPIELVERSION} (shown at the bottom right of the main menu)
+
+Installing
+----------
+1. Quit the game.
+2. Run OMC-5Mio-Installer.exe. It finds the game through Steam (otherwise use "Change …" and pick the game folder).
+3. "Install …", read the notice, tick the box, "Install".
+4. In the game's main menu, switch "Vault" (next to the save slot) to "5 million · mod (offline)", then start a
+   new game.
+
+Windows may warn when starting it ("Windows protected your PC") because the program is not signed. Choose
+"More info" → "Run anyway". SHA256SUMS.txt lets you check that the file is unchanged
+(PowerShell: Get-FileHash .\OMC-5Mio-Installer.exe).
+
+What the installer does
+-----------------------
+- It puts the mod loader BepInEx 5.4.23.6 (only if none is present yet) and the mod into the game folder. It does
+  not change any game files. If it had to overwrite an existing file, it backs it up first.
+- Every change is recorded in the folder "5Mio-Mod-Installation" inside the game folder – uninstalling needs it.
+
+Uninstalling
+------------
+Run OMC-5Mio-Installer.exe → "Uninstall …". Everything is removed and the game folder is restored to its original
+state; the installer then checks the folder against Steam's file list. It asks whether the mod's saves should be
+deleted as well.
+By hand, without the installer (only if BepInEx came with the mod): delete "BepInEx", "winhttp.dll",
+"doorstop_config.ini", ".doorstop_version" and "5Mio-Mod-Installation" in the game folder.
+
+Game updates
+------------
+Steam updates leave the mod's files alone. The mod checks the game version every time the game starts: if it is
+not version {SPIELVERSION}, it switches itself off (a note appears at the bottom left of the main menu) and the game
+runs unmodified until a matching version of the mod is available.
+
+Saves and online services
+-------------------------
+- The "5 million" mode sends nothing to Steam: no leaderboards, no achievements, no Steam Cloud.
+- Separate save: %LOCALAPPDATA%\OneMillionCoins-5Mio\ (save and local leaderboard).
+  The game's normal save is not touched.
+- The game saves when you leave through the pause menu.
+
+Known limitations
+-----------------
+- A few spots lack collision (floor 22/23: one handrail bar, one railing foot at a stair corner).
+- Performance: about 70 frames per second while digging on the development PC; slower PCs are not tested.
+- The mod's own texts are in German and English (following the game language).
+
+License: MIT (LICENSE.txt). Bundled components: Drittanbieter.txt.

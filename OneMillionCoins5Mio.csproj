@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- BepInEx-5-Plugin für One Million Coins (Unity 6000.6, Mono). -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>OneMillionCoins5Mio</AssemblyName>
+    <RootNamespace>OneMillionCoins5Mio</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GamePath Condition="'$(GamePath)' == ''">D:\SteamLibrary\steamapps\common\One Million Coins</GamePath>
+    <Managed>$(GamePath)\One Million Coins_Data\Managed</Managed>
+    <BepInExCore>$(GamePath)\BepInEx\core</BepInExCore>
+    <PluginDir>$(GamePath)\BepInEx\plugins\OneMillionCoins5Mio</PluginDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Hilfswerkzeuge, Installer und Prüfaufnahmen gehören nicht ins Plugin. -->
+    <Compile Remove="werkzeuge\**;installer\**" />
+    <None Remove="werkzeuge\**;installer\**;pruefung\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Geprüft 25.10.2026: latest 1.0.3, OSV 0, nicht abgekündigt. Nur Referenzdateien für den Build, läuft nicht im Spiel. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="$(BepInExCore)\BepInEx.dll" Private="false" />
+    <Reference Include="$(BepInExCore)\0Harmony.dll" Private="false" />
+    <Reference Include="$(Managed)\Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(Managed)\com.rlabrecque.steamworks.net.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.PhysicsModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.IMGUIModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.TextRenderingModule.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.ImageConversionModule.dll" Private="false" />
+    <Reference Include="$(Managed)\Unity.Collections.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.MathematicsModule.dll" Private="false" />
+    <Reference Include="$(Managed)\Unity.Mathematics.dll" Private="false" />
+    <Reference Include="$(Managed)\UnityEngine.JSONSerializeModule.dll" Private="false" />
+    <Reference Include="$(Managed)\Unity.Entities.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- Nach dem Bau ins Plugin-Verzeichnis des Spiels kopieren; -p:Deploy=false baut nur (z. B. für den Installer). -->
+  <Target Name="DeployPlugin" AfterTargets="Build" Condition="Exists('$(GamePath)\BepInEx') And '$(Deploy)' != 'false'">
+    <MakeDir Directories="$(PluginDir)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(PluginDir)" />
+  </Target>
+
+</Project>

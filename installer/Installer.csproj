@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Installer für Spieler: legt BepInEx und die Mod in den Spielordner, sichert Überschriebenes und stellt beim
+       Deinstallieren den Originalzustand wieder her. Bauen: erst das Plugin (-p:Deploy=false), dann dieses Projekt. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- .NET Framework 4.7.2 ist Bestandteil von Windows 10/11, kein EOL (geprüft 30.10.2026). -->
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>OMC-5Mio-Installer</AssemblyName>
+    <RootNamespace>OneMillionCoins5Mio.Installer</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Product>One Million Coins – 5 Mio. Münzen (Mod)</Product>
+    <PluginDll>$(MSBuildThisFileDirectory)..\bin\Release\OneMillionCoins5Mio.dll</PluginDll>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Geprüft 30.10.2026: latest 1.0.3, OSV 0, nicht abgekündigt. Nur Referenzdateien für den Build. -->
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Versionstabelle, Mod-Version, GUID: dieselbe Datei wie im Plugin. -->
+    <Compile Include="..\src\ReleaseInfo.cs" Link="ReleaseInfo.cs" />
+    <!-- BepInEx 5.4.23.6 win_x64, geprüft 30.10.2026: latest, OSV 0, keine Advisories, SHA-256 wie auf GitHub. -->
+    <EmbeddedResource Include="pakete\BepInEx_win_x64_5.4.23.6.zip" LogicalName="BepInEx.zip" />
+    <EmbeddedResource Include="$(PluginDll)" LogicalName="Plugin.dll" />
+    <EmbeddedResource Include="pakete\Drittanbieter.txt" LogicalName="Drittanbieter.txt" />
+  </ItemGroup>
+
+  <Target Name="CheckPlugin" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(PluginDll)')"
+           Text="Plugin fehlt. Erst bauen: dotnet build OneMillionCoins5Mio.csproj -c Release -p:Deploy=false" />
+  </Target>
+
+</Project>

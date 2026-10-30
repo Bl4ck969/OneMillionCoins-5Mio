@@ -1,0 +1,9 @@
+bin/
+obj/
+*.user
+.vs/
+# Prüfaufnahmen (Bilder, groß, jederzeit neu erzeugbar)
+pruefung/
+__pycache__/
+# Release-Pakete (werkzeuge/release.py, jederzeit neu erzeugbar)
+release/
