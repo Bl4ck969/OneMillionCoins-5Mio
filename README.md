@@ -18,8 +18,9 @@ and a local leaderboard. The normal 1 million game is unchanged.*
 
 ## Download und Installation / Download and install
 
-1. Unter **[Releases](https://github.com/Bl4ck969/OneMillionCoins-5Mio/releases)** die ZIP-Datei laden und entpacken. / *Download and unpack the ZIP from
-   **Releases**.*
+1. Unter **[Releases](https://github.com/Bl4ck969/OneMillionCoins-5Mio/releases)** oder auf
+   **[Nexus Mods](https://www.nexusmods.com/onemillioncoins/mods/4)** die ZIP-Datei laden und entpacken. / *Download and
+   unpack the ZIP from **Releases** or **Nexus Mods**.*
 2. Spiel beenden, `OMC-5Mio-Installer.exe` starten, „Installieren …“. / *Quit the game, run the installer, "Install …".*
 3. Im Hauptmenü des Spiels die Auswahl **Tresor** auf „5 Millionen · Mod (offline)“ stellen. / *In the main menu,
    switch **Vault** to "5 million · mod (offline)".*
