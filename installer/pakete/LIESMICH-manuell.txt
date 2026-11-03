@@ -1,0 +1,85 @@
+One Million Coins – „5 Mio. Münzen“ (Mod) {VERSION} – Installation von Hand
+==========================================================================
+English version below.
+
+Dieses Paket enthält nur die Mod selbst, ohne Installer und ohne Mod-Lader. Einfacher ist das Paket mit
+OMC-5Mio-Installer.exe; dieses hier ist für alle, die BepInEx selbst verwalten oder keine EXE ausführen möchten.
+
+Die Mod wurde mit Hilfe künstlicher Intelligenz (Claude von Anthropic) geschrieben. Sie stammt nicht vom Entwickler
+des Spiels und wird von ihm nicht unterstützt. Nutzung auf eigene Gefahr. Mehr in der Beschreibung auf Nexus/GitHub.
+
+Voraussetzungen
+---------------
+- Windows 10 oder 11, 64 Bit
+- „One Million Coins“ von Steam; geprüft mit Version {SPIELVERSION}
+- BepInEx 5 (geprüft mit 5.4.23.6, 64 Bit): https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.6
+  → Datei „BepInEx_win_x64_5.4.23.6.zip“
+
+Installieren
+------------
+1. Spiel beenden. Den Spielordner öffnen: Steam → Rechtsklick auf das Spiel → Verwalten → Lokale Dateien durchsuchen.
+2. Falls noch kein BepInEx da ist: BepInEx_win_x64_5.4.23.6.zip in den Spielordner entpacken (dort liegen danach
+   „BepInEx“, „winhttp.dll“ und „doorstop_config.ini“ neben „One Million Coins.exe“).
+3. Dieses Paket in den Spielordner entpacken. Die Mod liegt dann unter
+   BepInEx\plugins\OneMillionCoins5Mio\OneMillionCoins5Mio.dll
+4. Im Spiel: Hauptmenü, rechts neben „Speicherplatz“ die Auswahl „Tresor“ auf „5 Millionen · Mod (offline)“
+   stellen, dann „Neues Spiel“.
+
+Update: die DLL im selben Ordner ersetzen. Spielstände, Bestenliste und Einstellungen bleiben.
+Deinstallieren: den Ordner BepInEx\plugins\OneMillionCoins5Mio löschen, die Einstellungen
+BepInEx\config\de.bl4ck969.onemillioncoins.5mio.cfg ebenso. BepInEx selbst nur löschen, wenn keine andere Mod es
+braucht. Die Spielstände der Mod liegen unter %LOCALAPPDATA%\OneMillionCoins-5Mio\.
+
+Spiel-Updates
+-------------
+Kennt die Mod den Stand des Spiels nicht (etwa nach einem Steam-Update), bleibt sie zunächst aus, und das Spiel läuft
+unverändert. Unten links im Hauptmenü lässt sie sich mit „Trotzdem einschalten …“ für genau diesen Stand einschalten,
+auf eigene Gefahr.
+
+Offline: Der Modus „5 Millionen“ sendet nichts an Steam (keine Bestenlisten, Erfolge, Steam Cloud) und hat einen
+eigenen Spielstand. Der normale Spielstand wird nicht angefasst.
+
+Lizenz: MIT (LICENSE.txt). Prüfsummen: SHA256SUMS.txt – beide liegen wie diese Anleitung im Mod-Ordner.
+
+
+One Million Coins – "5 Million Coins" (mod) {VERSION} – manual install
+======================================================================
+
+This package contains only the mod itself, without installer or mod loader. The package with OMC-5Mio-Installer.exe
+is easier; this one is for anyone who manages BepInEx themselves or prefers not to run an EXE.
+
+The mod was written with the help of artificial intelligence (Claude by Anthropic). It is not made or supported by the
+game's developer. Use at your own risk. More in the description on Nexus/GitHub.
+
+Requirements
+------------
+- Windows 10 or 11, 64-bit
+- "One Million Coins" from Steam; tested with version {SPIELVERSION}
+- BepInEx 5 (tested with 5.4.23.6, 64-bit): https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.6
+  → file "BepInEx_win_x64_5.4.23.6.zip"
+
+Installing
+----------
+1. Quit the game. Open the game folder: Steam → right-click the game → Manage → Browse local files.
+2. If BepInEx is not installed yet: unpack BepInEx_win_x64_5.4.23.6.zip into the game folder (afterwards "BepInEx",
+   "winhttp.dll" and "doorstop_config.ini" sit next to "One Million Coins.exe").
+3. Unpack this package into the game folder. The mod then is at
+   BepInEx\plugins\OneMillionCoins5Mio\OneMillionCoins5Mio.dll
+4. In the game's main menu, switch "Vault" (next to the save slot) to "5 million · mod (offline)", then start a new
+   game.
+
+Updating: replace the DLL in the same folder. Saves, leaderboard and settings are kept.
+Uninstalling: delete the folder BepInEx\plugins\OneMillionCoins5Mio and the settings file
+BepInEx\config\de.bl4ck969.onemillioncoins.5mio.cfg. Only delete BepInEx itself if no other mod needs it. The mod's
+saves are in %LOCALAPPDATA%\OneMillionCoins-5Mio\.
+
+Game updates
+------------
+If the mod does not know the game's build (for example after a Steam update), it stays off at first and the game runs
+unmodified. "Switch on anyway …" at the bottom left of the main menu turns it on for exactly that build, at your own
+risk.
+
+Offline: the "5 million" mode sends nothing to Steam (no leaderboards, achievements, Steam Cloud) and keeps its own
+save. Your normal save is not touched.
+
+License: MIT (LICENSE.txt). Checksums: SHA256SUMS.txt – both sit in the mod folder, like this file.

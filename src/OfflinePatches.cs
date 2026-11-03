@@ -24,7 +24,12 @@ namespace OneMillionCoins5Mio
         /// <summary>Prüfläufe (Testmodus mit allen Fertigkeiten) bekommen wie im Original einen eigenen Spielstand.</summary>
         internal static bool Testing => Plugin.TestLoadout;
 
-        internal static string SaveFile => Path.Combine(ModFolder, Testing ? "spielstand.test.json" : "spielstand.json");
+        /// <summary>
+        /// Der Ladetest „spielstand-laden“ läuft ohne Testmodus (sonst lehnt das Spiel einen echten Spielstand ab:
+        /// testingLoadout muss passen) – auf einer eigenen Datei, damit er den echten Spielstand nie berührt (03.11.2026).
+        /// </summary>
+        internal static string SaveFile => Path.Combine(ModFolder,
+            Testing ? "spielstand.test.json" : SaveTest.LoadRequested ? "spielstand.ladetest.json" : "spielstand.json");
 
         internal static bool HasModSave => File.Exists(SaveFile) || File.Exists(SaveFile + ".bak");
 

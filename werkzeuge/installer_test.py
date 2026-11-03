@@ -164,13 +164,97 @@ check(not os.path.exists(os.path.join(game, r"BepInEx\plugins\OneMillionCoins5Mi
       "Mod-Ordner und Mod-Einstellungen weg")
 check(not os.path.exists(os.path.join(game, "5Mio-Mod-Installation")), "Protokollordner weg")
 
-print("D: nicht geprüfte Spielversion")
+def fingerprint(game):
+    """Wie ReleaseInfo.Fingerprint: je 16 Zeichen der Prüfsummen von Code und Einstellungen des Spiels."""
+    return (sha(os.path.join(game, r"One Million Coins_Data\Managed\Assembly-CSharp.dll"))[:16] + "-" +
+            sha(os.path.join(game, r"One Million Coins_Data\globalgamemanagers"))[:16])
+
+
+print("D: nicht geprüfte Spielversion (seit 03.11.2026: Hinweis statt Sperre, Freigabe nur mit --ungeprueft)")
 game, saves = make_game("D", untested=True)
 s0 = snapshot(game)
 code, out = run(game, saves, "--pruefen")
-check(code == 2 and "nicht geprüft" in out, "Vorprüfung rot (Exit %d)" % code)
+check(code == 0 and "[INFO]   Diese Spielversion ist nicht geprüft" in out, "Vorprüfung: Hinweis, installierbar (Exit %d)" % code)
 code, out = run(game, saves, "--installieren", "--einverstanden")
-check(code == 2 and diff(s0, snapshot(game)) == [], "Installation verweigert, nichts geschrieben (Exit %d)" % code)
+check(code == 2 and "--ungeprueft" in out and diff(s0, snapshot(game)) == [], "ohne --ungeprueft: Exit 2, nichts geschrieben (Exit %d)" % code)
+code, out = run(game, saves, "--installieren", "--einverstanden", "--ungeprueft")
+fp = fingerprint(game)
+cfg = os.path.join(game, CFG)
+text = open(cfg, encoding="utf-8", newline="").read() if os.path.isfile(cfg) else ""   # newline="": CRLF nicht umwandeln
+check(code == 0 and "Nachgeprüft: 23 Dateien" in out, "mit --ungeprueft installiert, 23 Dateien nachgeprüft (Exit %d)" % code)
+check(text == "[Kompatibilitaet]\r\n\r\nFreigegebeneVersion = %s\r\n" % fp, "Einstellungen tragen die Freigabe für genau diesen Stand: %r" % text)
+code, out = run(game, saves, "--deinstallieren")
+d = diff(s0, snapshot(game))
+check(code == 0 and d == [], "Deinstallation: Spielordner wie vorher, Einstellungen weg" + ("" if not d else ": " + ", ".join(d[:8])))
+
+print("D2: nicht geprüft, BepInEx und eigene Einstellungen schon da (alte Freigabe, andere Abschnitte)")
+game, saves = make_game("D2", untested=True)
+extract_bepinex(game)
+own = "[Etagen]\r\n\r\nAnzahl = 30\r\n\r\n[Kompatibilitaet]\r\n\r\n## Beschreibung\r\nUngepruefteVersion = false\r\nFreigegebeneVersion = alt-alt\r\n\r\n[Menue]\r\n\r\nTresor = 5Mio\r\n"
+os.makedirs(os.path.dirname(os.path.join(game, CFG)), exist_ok=True)
+open(os.path.join(game, CFG), "wb").write(own.encode("utf-8"))
+s0 = snapshot(game)
+code, out = run(game, saves, "--installieren", "--einverstanden", "--ungeprueft")
+text = open(os.path.join(game, CFG), encoding="utf-8", newline="").read()
+check(code == 0 and text == own.replace("alt-alt", fingerprint(game)), "nur die Freigabe-Zeile ersetzt, alles andere gleich (Exit %d)" % code)
+code, out = run(game, saves, "--deinstallieren")
+d = diff(s0, snapshot(game))
+check(code == 0 and d == [], "Deinstallation: Einstellungen byte-gleich zurück" + ("" if not d else ": " + ", ".join(d[:8])))
+for label, own, expected in (
+        ("Abschnitt ohne Schlüssel", "[Kompatibilitaet]\r\n\r\nUngepruefteVersion = false\r\n",
+         "[Kompatibilitaet]\r\nFreigegebeneVersion = {fp}\r\n\r\nUngepruefteVersion = false\r\n"),
+        ("Datei ohne Abschnitt", "[Etagen]\r\nAnzahl = 30\r\n\r\n",
+         "[Etagen]\r\nAnzahl = 30\r\n\r\n[Kompatibilitaet]\r\n\r\nFreigegebeneVersion = {fp}\r\n")):
+    open(os.path.join(game, CFG), "wb").write(own.encode("utf-8"))
+    s1 = snapshot(game)
+    code, out = run(game, saves, "--installieren", "--einverstanden", "--ungeprueft")
+    text = open(os.path.join(game, CFG), encoding="utf-8", newline="").read()
+    check(code == 0 and text == expected.format(fp=fingerprint(game)), "%s: Freigabe eingefügt: %r" % (label, text))
+    run(game, saves, "--deinstallieren")
+    check(diff(s1, snapshot(game)) == [], "%s: Deinstallation stellt die Datei wieder her" % label)
+
+print("D3: geprüfte Spielversion mit --ungeprueft: keine Freigabe nötig, Einstellungen bleiben unberührt")
+game, saves = make_game("D3")
+s0 = snapshot(game)
+code, out = run(game, saves, "--installieren", "--einverstanden", "--ungeprueft")
+check(code == 0 and not os.path.exists(os.path.join(game, CFG)) and "FreigegebeneVersion" not in out, "keine Einstellungsdatei angelegt (Exit %d)" % code)
+run(game, saves, "--deinstallieren")
+check(diff(s0, snapshot(game)) == [], "Deinstallation: Spielordner wie vorher")
+
+print("I: Update – neu installieren über eine bestehende Installation: Spielstände und Mod-Einstellungen bleiben (seit 03.11.2026)")
+game, saves = make_game("I")
+s0 = snapshot(game)
+run(game, saves, "--installieren", "--einverstanden")
+runtime_files(game)
+played = b"[Menue]\r\n\r\nTresor = 5Mio\r\n\r\n[Aufzug]\r\n\r\nGeschwindigkeit = 9\r\n"
+open(os.path.join(game, CFG), "wb").write(played)
+os.makedirs(saves)
+for name in ("spielstand.json", "spielstand.json.bak", "bestenliste.tsv"):
+    open(os.path.join(saves, name), "wb").write(name.encode() * 100)
+saves_before = snapshot(saves)
+code, out = run(game, saves, "--installieren", "--einverstanden")
+check(code == 0 and "Spielstände bleiben" in out and "Einstellungen der Mod übernommen" in out, "neu installiert (Exit %d)" % code)
+check(snapshot(saves) == saves_before, "Spielstände und Bestenliste byte-gleich (%d Dateien)" % len(saves_before[0]))
+check(open(os.path.join(game, CFG), "rb").read() == played, "Mod-Einstellungen byte-gleich (Tresor = 5Mio)")
+code, out = run(game, saves, "--deinstallieren")
+d = diff(s0, snapshot(game))
+check(code == 0 and d == [], "Deinstallation danach: Spielordner wie vor der ersten Installation" + ("" if not d else ": " + ", ".join(d[:8])))
+
+print("I2: dasselbe, BepInEx und eigene Einstellungen waren schon vor der ersten Installation da")
+game, saves = make_game("I2")
+extract_bepinex(game)
+os.makedirs(os.path.dirname(os.path.join(game, CFG)), exist_ok=True)
+open(os.path.join(game, CFG), "wb").write(b"[Etagen]\r\n\r\nAnzahl = 25\r\n")
+s0 = snapshot(game)
+run(game, saves, "--installieren", "--einverstanden")
+open(os.path.join(game, CFG), "wb").write(played)
+code, out = run(game, saves, "--installieren", "--einverstanden")
+check(code == 0 and open(os.path.join(game, CFG), "rb").read() == played, "neu installiert, gespielte Einstellungen bleiben (Exit %d)" % code)
+code, out = run(game, saves, "--deinstallieren")
+d = diff(s0, snapshot(game))
+# Eine schon vorhandene Einstellungsdatei hat der Installer nie geschrieben: Sie bleibt, wie das Spiel sie zuletzt schrieb (wie Fall B).
+check(code == 0 and d == ["~" + CFG.lower()] and open(os.path.join(game, CFG), "rb").read() == played,
+      "Deinstallation: sonst alles wie vorher, vorhandene Einstellungen bleiben in ihrem letzten Stand" + ("" if not d else ": " + ", ".join(d[:8])))
 
 print("E: anderer Mod-Lader (winhttp.dll ohne BepInEx)")
 game, saves = make_game("E")

@@ -19,7 +19,16 @@ namespace OneMillionCoins5Mio
     {
         internal static bool Requested => Plugin.CheckMode.Value == "spielstand";
 
+        /// <summary>
+        /// Prüfmodus „spielstand-laden“ (seit 03.11.2026): den vorhandenen Test-Spielstand über „Weiter“ laden – etwa eine Kopie
+        /// eines Spielstands, den eine frühere Fassung der Mod geschrieben hat –, festhalten, was angekommen ist, und ohne
+        /// Speichern zurück. Danach die echte Bestenliste öffnen (nur lesen). Der Prüflauf „spielstand“ lädt nur, was er selbst
+        /// eben gespeichert hat; ob ältere Spielstände laden, sah er nie.
+        /// </summary>
+        internal static bool LoadRequested => Plugin.CheckMode.Value == "spielstand-laden";
+
         private static SaveTest _instance;
+        private bool _loadOnly;
 
         internal static void Begin()
         {
@@ -29,10 +38,75 @@ namespace OneMillionCoins5Mio
             _instance = go.AddComponent<SaveTest>();
         }
 
-        private string Folder => Path.Combine(Plugin.CheckFolder.Value, "spielstand");
+        /// <summary>Aus dem Hauptmenü: Der Ladetest startet den Lauf selbst über „Weiter“.</summary>
+        internal static void BeginLoad()
+        {
+            if (_instance != null) return;
+            var go = new GameObject("Spielstand-Ladetest");
+            DontDestroyOnLoad(go);
+            _instance = go.AddComponent<SaveTest>();
+            _instance._loadOnly = true;
+        }
+
+        private string Folder => Path.Combine(Plugin.CheckFolder.Value, _loadOnly ? "spielstand-laden" : "spielstand");
+
+        private IEnumerator LoadExisting()
+        {
+            Directory.CreateDirectory(Folder);
+            foreach (string old in Directory.GetFiles(Folder)) File.Delete(old);
+            yield return new WaitForSecondsRealtime(3f);
+            Plugin.Vault.Value = "5Mio";
+            string file = OfflinePatches.SaveFile;
+            string before = ReleaseInfo.Sha256(file);
+            var lines = new List<string>
+            {
+                $"Ladetest: Datei {file}, {(File.Exists(file) ? new FileInfo(file).Length / 1024.0 / 1024.0 : -1):0.0} MB, " +
+                $"Menü zeigt Weiterspielen {SaveManager.HasSavedGame}, Zusatz \"{SaveManager.SavedRulesetCaption}\"",
+            };
+            yield return Shot("menue.png");
+
+            var menu = FindAnyObjectByType<MainMenuUI>();
+            AccessTools.Method(typeof(MainMenuUI), "Play").Invoke(menu, new object[] { false });
+            float until = Time.realtimeSinceStartup + 60f;
+            while (SceneManager.GetActiveScene().path == GameNavigation.MenuScene && Time.realtimeSinceStartup < until) yield return null;
+            yield return new WaitForSecondsRealtime(8f);
+            var saves = FindAnyObjectByType<SaveManager>();
+            var pile = FindAnyObjectByType<GranularCoinPile>();
+            var progress = Traverse.Create(FindAnyObjectByType<GameSceneController>()).Field<GameProgressManager>("progress").Value;
+            int learned = progress != null ? Traverse.Create(progress).Field<HashSet<SkillId>>("_learnedSkills").Value.Count : -1;
+            var player = FindAnyObjectByType<FirstPersonController>();
+            bool canSave = saves != null && Traverse.Create(saves).Field<bool>("_canSave").Value;
+            lines.Add($"Ladetest: geladen, Mod aktiv {ModState.Active}, Haufen {(pile != null ? pile.Model.Remaining : -1):N0}, " +
+                $"Durchgänge {progress?.CompletedVaults}, Münzen {progress?.CollectedCoins:N0}, Geld {progress?.Money:N0}, Fertigkeiten {learned}, " +
+                $"Spielzeit {progress?.ActivePlayTimeSeconds:0.0} s, Spieler {(player != null ? player.transform.position.ToString("F1") : "fehlt")}, " +
+                $"speicherbar {canSave}, Meldung \"{saves?.StatusMessage}\"");
+            yield return Shot("geladen.png");
+
+            var hud = FindAnyObjectByType<GoldDiggerHUD>();
+            AccessTools.Method(typeof(GoldDiggerHUD), "ReturnToMenu").Invoke(hud, new object[] { false });
+            until = Time.realtimeSinceStartup + 30f;
+            while (SceneManager.GetActiveScene().path != GameNavigation.MenuScene && Time.realtimeSinceStartup < until) yield return null;
+            yield return new WaitForSecondsRealtime(3f);
+            lines.Add($"Ladetest: zurück ohne Speichern, Spielstand-Datei unverändert {ReleaseInfo.Sha256(file) == before}");
+            FindAnyObjectByType<MainMenuUI>().OpenLeaderboards(null);
+            yield return Shot("bestenliste.png");
+            var entries = Leaderboard.Load();
+            lines.Add($"Ladetest: echte Bestenliste geöffnet (nur gelesen), {entries.Count} Einträge: " +
+                string.Join(" | ", entries.Select(e => $"{e.date} {e.seconds:0.0} s Durchgang {e.vault + 1}{(e.test ? " Test" : "")}").ToArray()));
+            foreach (string line in lines) Plugin.Log.LogInfo(line);
+            File.WriteAllLines(Path.Combine(Folder, "ergebnis.txt"), lines);
+            // BepInEx schreibt sein Log gepuffert (03.11.2026).
+            yield return new WaitForSecondsRealtime(2f);
+            Application.Quit();
+        }
 
         private IEnumerator Start()
         {
+            if (_loadOnly)
+            {
+                yield return LoadExisting();
+                yield break;
+            }
             if (Directory.Exists(Folder)) Directory.Delete(Folder, true);
             Directory.CreateDirectory(Folder);
             yield return new WaitForSecondsRealtime(5f);

@@ -69,11 +69,15 @@ namespace OneMillionCoins5Mio
             _probe = new HarmonyLib.Harmony("de.bl4ck969.onemillioncoins.5mio.leistung");
             for (int i = 0; i < Parts.Length; i++)
             {
-                var method = HarmonyLib.AccessTools.Method(Parts[i].type, Parts[i].name);
+                var method = HarmonyLib.AccessTools.Method(Parts[i].type, PartName(i));
                 _probe.Patch(method, prefix: new HarmonyLib.HarmonyMethod(typeof(LoadTest), nameof(Before)),
                     postfix: new HarmonyLib.HarmonyMethod(typeof(LoadTest), "After" + i));
             }
         }
+
+        /// <summary>Seit Build 26367772 läuft die Kollision im Spiel über RefreshCollisionInBackground (PilePatches).</summary>
+        private static string PartName(int i) =>
+            Parts[i].name == "RefreshCollision" && PilePatches.Background ? "RefreshCollisionInBackground" : Parts[i].name;
 
         private static void Before(out long __state) => __state = System.Diagnostics.Stopwatch.GetTimestamp();
         private static void Done(int i, long start)
@@ -133,10 +137,11 @@ namespace OneMillionCoins5Mio
                 yield return null;
             }
             for (int i = 0; i < Parts.Length; i++)
-                Plugin.Log.LogInfo($"Leistungstest {Parts[i].name}: {PartMs[i] / frames:0.0} ms je Bild, {PartCalls[i] / (float)frames:0.00} Aufrufe je Bild, {PartMs[i] / Mathf.Max(1, PartCalls[i]):0.0} ms je Aufruf");
+                Plugin.Log.LogInfo($"Leistungstest {PartName(i)}: {PartMs[i] / frames:0.0} ms je Bild, {PartCalls[i] / (float)frames:0.00} Aufrufe je Bild, {PartMs[i] / Mathf.Max(1, PartCalls[i]):0.0} ms je Aufruf");
             _probe.UnpatchSelf();
             Plugin.Log.LogInfo($"Leistungstest Kollision (Band): {PilePatches.Calls / (float)frames:0.00} Aufrufe je Bild, je Aufruf " +
-                $"Netz {PilePatches.JobMs / Mathf.Max(1, PilePatches.Calls):0.0} ms, Auswahl {PilePatches.FilterMs / Mathf.Max(1, PilePatches.Calls):0.0} ms, PhysX {PilePatches.CookMs / Mathf.Max(1, PilePatches.Calls):0.0} ms");
+                $"Netz {PilePatches.JobMs / Mathf.Max(1, PilePatches.Calls):0.0} ms, Auswahl {PilePatches.FilterMs / Mathf.Max(1, PilePatches.Calls):0.0} ms, " +
+                (PilePatches.Background ? "Übergabe ans Netz (gebacken wird im Hintergrund) " : "PhysX ") + $"{PilePatches.CookMs / Mathf.Max(1, PilePatches.Calls):0.0} ms");
             yield return CompareBand(pile, player, "ende");
             yield return StandOnMountain(pile, player, false);
             yield return StandOnMountain(pile, player, true);
@@ -155,7 +160,8 @@ namespace OneMillionCoins5Mio
             var model = pile.Model;
             PilePatches.Bypass = original;
             PilePatches.Rebuild(pile);
-            // Höchste offene Säule (ohne Decke) nahe der Gebäudemitte.
+            // Offene Säule (ohne Decke) mit Münzen, die der Gebäudemitte am nächsten liegt – nicht die höchste. Der zweite
+            // Durchgang beginnt deshalb meist unten im Schacht des ersten, und dessen Wände rutschen nach (03.11.2026).
             int best = -1;
             float bestScore = float.MaxValue;
             for (int layer = 0; layer < model.LayerCount; layer++)
@@ -175,8 +181,8 @@ namespace OneMillionCoins5Mio
             controller.enabled = true;
             yield return new WaitForSecondsRealtime(1f);
             float startY = player.position.y, last = startY, maxJump = 0f;
-            int jumps = 0, sunk = 0;
-            float deepest = 0f;
+            int jumps = 0, sunk = 0, frames = 0, sunkTop = 0, overfull = 0, grounded = 0;
+            float deepest = 0f, deepestTop = 0f, fastestFall = 0f;
             var jumpLines = new System.Collections.Generic.List<string>();
             float until = Time.realtimeSinceStartup + 15f;
             while (Time.realtimeSinceStartup < until)
@@ -196,8 +202,19 @@ namespace OneMillionCoins5Mio
                         if (model.LayerCounts[layer] == 0 || model.LayerBase(layer) > sole) continue;
                         float surface = model.LayerBase(layer) + model.LayerCounts[layer] * model.PackedRise;
                         if (surface - sole > 0.5f) { sunk++; deepest = Mathf.Max(deepest, surface - sole); }
+                        // Schicht mit rechnerischer Oberfläche über ihrer Decke: zählt oben mit, ohne dass Münzen über der Figur liegen.
+                        if (surface > model.LayerCeiling(layer) + 0.5f) overfull++;
+                    }
+                    // Physikalisch entscheidend ist die oberste Schicht, auf der die Figur steht: liegt ihre Oberfläche über der Sohle?
+                    int topLayer = model.LayerEnd(cell) - 1;
+                    if (topLayer >= model.LayerStart(cell) && model.LayerCounts[topLayer] > 0 && model.LayerBase(topLayer) <= sole)
+                    {
+                        float surface = model.LayerBase(topLayer) + model.LayerCounts[topLayer] * model.PackedRise;
+                        if (surface - sole > 0.5f) { sunkTop++; deepestTop = Mathf.Max(deepestTop, surface - sole); }
                     }
                 }
+                if (controller.isGrounded) grounded++;
+                fastestFall = Mathf.Min(fastestFall, (y - last) / Mathf.Max(Time.unscaledDeltaTime, 0.0001f));
                 if (y - last > 0.5f)
                 {
                     jumps++;
@@ -205,9 +222,12 @@ namespace OneMillionCoins5Mio
                     if (jumpLines.Count < 8) jumpLines.Add($"{last:0.0}->{y:0.0}");
                 }
                 last = y;
+                frames++;
             }
             Plugin.Log.LogInfo($"Bergtest ({(original ? "Kollision wie Spiel" : "Kollisionsband")}): Start y {startY:0.0} bei x {spot.x:0.0} z {spot.z:0.0}, Ende y {last:0.0}, " +
-                $"{jumps} Sprünge nach oben (größter {maxJump:0.0} m) {string.Join(" ", jumpLines)}, {sunk} Bilder im Haufen versunken (tiefstens {deepest:0.0} m)");
+                $"{jumps} Sprünge nach oben (größter {maxJump:0.0} m) {string.Join(" ", jumpLines)}, {sunk} von {frames} Bildern im Haufen versunken (tiefstens {deepest:0.0} m); " +
+                $"unter der obersten Schicht {sunkTop} (tiefstens {deepestTop:0.0} m), Schichten über ihrer Decke {overfull}, " +
+                $"auf Boden {grounded} von {frames} Bildern, schnellster Fall {-fastestFall:0.0} m/s");
             PilePatches.Bypass = false;
             PilePatches.Rebuild(pile);
         }

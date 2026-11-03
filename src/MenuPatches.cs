@@ -51,11 +51,13 @@ namespace OneMillionCoins5Mio
             {
                 _logged = true;
                 Plugin.Log.LogInfo($"Tresor-Auswahl im Hauptmenü aktiv ({(ModSelected ? "5 Millionen" : "Original")}).");
-                if ((Diagnostics.Requested || LoadTest.Requested || SaveTest.Requested || SkillTest.Requested || PictureRun.Requested) && ModState.OfflineGuardsReady)
+                if ((Diagnostics.Requested || LoadTest.Requested || SaveTest.Requested || SaveTest.LoadRequested || SkillTest.Requested || PictureRun.Requested)
+                    && ModState.OfflineGuardsReady)
                 {
                     Plugin.Log.LogInfo($"Prüfmodus \"{Plugin.CheckMode.Value}\": starte automatisch.");
-                    // „bilder“ nimmt zuerst das Menü auf und startet den Lauf selbst.
+                    // „bilder“ nimmt zuerst das Menü auf und startet den Lauf selbst, „spielstand-laden“ über „Weiter“.
                     if (PictureRun.Requested) PictureRun.Begin();
+                    else if (SaveTest.LoadRequested) SaveTest.BeginLoad();
                     else Plugin.Launch();
                     return;
                 }

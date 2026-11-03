@@ -44,6 +44,8 @@ namespace OneMillionCoins5Mio.Installer
         {
             internal readonly List<Finding> Findings = new List<Finding>();
             internal bool CanInstall, CanUninstall, Installed;
+            /// <summary>Spielstand nicht in ReleaseInfo.Tested: installieren geht, aber erst nach Rückfrage (seit 03.11.2026).</summary>
+            internal bool Untested;
         }
 
         internal readonly string Game;
@@ -99,11 +101,14 @@ namespace OneMillionCoins5Mio.Installer
 
             var build = ReleaseInfo.Identify(game.Folder);
             string steamBuild = game.BuildId != null ? L(" (Steam-Build ", " (Steam build ") + game.BuildId + ")" : "";
+            check.Untested = build == null;
+            // Bis 03.11.2026 sperrte ein nicht geprüfter Stand die Installation. Jetzt entscheidet der Spieler – nach einer Rückfrage.
             if (build != null)
                 Add(Level.Ok, L("Spielversion ", "Game version ") + build.Version + steamBuild + L(": geprüft", ": tested"));
             else
-                Add(Level.Error, L("Diese Spielversion ist nicht geprüft", "This game version is not tested") + steamBuild +
-                    L($". Die Mod läuft nur mit Version {ReleaseInfo.TestedVersions}.", $". The mod only runs with version {ReleaseInfo.TestedVersions}."));
+                Add(Level.Note, L("Diese Spielversion ist nicht geprüft", "This game version is not tested") + steamBuild +
+                    L($" – geprüft ist die Mod mit {ReleaseInfo.TestedVersions}. Installieren geht trotzdem; vorher fragt der Installer, ob sie auf dieser Version laufen soll.",
+                        $" – the mod is tested with {ReleaseInfo.TestedVersions}. You can still install it; the installer will ask first whether it should run on this version."));
             if (game.SteamBusy)
                 Add(Level.Error, L("Steam hat ein Update für das Spiel offen – erst fertig laden lassen.",
                     "Steam has a pending update for the game – let it finish first."));
@@ -143,18 +148,28 @@ namespace OneMillionCoins5Mio.Installer
             if (Directory.Exists(saveFolder))
                 Add(Level.Note, L("Spielstände der Mod: ", "Mod saves: ") + saveFolder + " (" + Directory.GetFiles(saveFolder).Length + L(" Dateien)", " files)"));
 
-            check.CanInstall = !running && build != null && !game.SteamBusy && loader != Loader.Other && !oldPlugin;
+            check.CanInstall = !running && !game.SteamBusy && loader != Loader.Other && !oldPlugin;
             check.CanUninstall = !running && setup.Installed;
             return check;
         }
 
         // ---------------------------------------------------------------- Installieren
 
-        /// <summary>Installiert die Mod; ist sie schon installiert, wird sie vorher (ohne Spielstände) entfernt.</summary>
-        internal void Install()
+        /// <summary>
+        /// Installiert die Mod; ist sie schon installiert, wird sie vorher (ohne Spielstände) entfernt. Mit
+        /// <paramref name="releaseUntested"/> wird ein nicht geprüfter Spielstand in den Mod-Einstellungen freigegeben – die Mod
+        /// läuft dann darauf; ohne bleibt sie auf ihm aus, bis der Spieler sie im Hauptmenü einschaltet.
+        /// </summary>
+        internal void Install(bool releaseUntested = false)
         {
+            // Die Einstellungen der Mod (u. a. die Tresor-Auswahl) überstehen das Neu-Installieren. Bis 03.11.2026 gingen sie mit
+            // dem BepInEx-Ordner verloren: Tresor stand danach auf „Original“, und „Weiter“ führte ins normale Spiel statt in den
+            // 5-Mio.-Spielstand – der Spielstand war da, sah aber verschwunden aus.
+            byte[] keptSettings = null;
             if (Installed)
             {
+                string current = Path.Combine(Game, ConfigFile);
+                if (File.Exists(current)) keptSettings = File.ReadAllBytes(current);
                 log(L("Vorhandene Installation wird zuerst entfernt (Spielstände bleiben).", "Removing the existing installation first (saves are kept)."));
                 var problems = Uninstall(deleteSaves: false);
                 if (problems.Count > 0) throw new SetupException(string.Join(Environment.NewLine, problems));
@@ -191,6 +206,27 @@ namespace OneMillionCoins5Mio.Installer
                 }
                 Put(record, "mod", PluginFile, plugin);
                 log(L("Mod installiert: ", "Mod installed: ") + PluginFile);
+                bool release = releaseUntested && build == null;
+                if (keptSettings != null || release)
+                {
+                    // Über Put wie jede andere Datei: neu angelegt → beim Deinstallieren weg; vorhanden → gesichert und
+                    // beim Deinstallieren zurückgelegt. Die übrigen Zeilen der Einstellungen bleiben, wie sie sind.
+                    string cfg = Path.Combine(Game, ConfigFile);
+                    string fingerprint = release ? ReleaseInfo.Fingerprint(Game) : null;
+                    byte[] content = keptSettings;
+                    if (release)
+                    {
+                        string old = keptSettings != null ? Text(keptSettings) : File.Exists(cfg) ? File.ReadAllText(cfg) : null;
+                        content = new System.Text.UTF8Encoding(false).GetBytes(WithRelease(old, fingerprint));
+                    }
+                    if (!File.Exists(cfg) || ReleaseInfo.Sha256(cfg) != Sha256(content)) Put(record, "mod", ConfigFile, content);
+                    if (keptSettings != null) log(L("Einstellungen der Mod übernommen.", "Mod settings kept."));
+                    if (release)
+                    {
+                        record.Add("freigabe", fingerprint);
+                        log(L("Für diese Spielversion eingeschaltet (FreigegebeneVersion = ", "Switched on for this game version (FreigegebeneVersion = ") + fingerprint + ").");
+                    }
+                }
             }
             catch (Exception)
             {
@@ -212,6 +248,37 @@ namespace OneMillionCoins5Mio.Installer
             if (wrong.Count > 0)
                 throw new SetupException(L("Nach dem Schreiben abweichend: ", "Different after writing: ") + string.Join(", ", wrong));
             log(L($"Nachgeprüft: {written.Count} Dateien wie vorgesehen.", $"Verified: {written.Count} files as intended."));
+        }
+
+        /// <summary>
+        /// Einstellungsdatei mit [Kompatibilitaet] FreigegebeneVersion = <paramref name="value"/>: vorhandene Zeile ersetzen,
+        /// sonst unter dem Abschnitt einfügen, sonst den Abschnitt anhängen. BepInEx liest den Wert beim ersten Start und
+        /// schreibt die Datei dann mit allen Beschreibungen neu.
+        /// </summary>
+        internal static string WithRelease(string text, string value)
+        {
+            const string section = "[Kompatibilitaet]", key = "FreigegebeneVersion";
+            var lines = (text ?? "").Replace("\r\n", "\n").Split('\n').ToList();
+            while (lines.Count > 0 && lines[lines.Count - 1].Trim().Length == 0) lines.RemoveAt(lines.Count - 1);
+            string entry = key + " = " + value;
+            int start = lines.FindIndex(l => l.Trim() == section);
+            if (start < 0)
+            {
+                if (lines.Count > 0) lines.Add("");
+                lines.Add(section);
+                lines.Add("");
+                lines.Add(entry);
+            }
+            else
+            {
+                int end = lines.FindIndex(start + 1, l => l.TrimStart().StartsWith("["));
+                if (end < 0) end = lines.Count;
+                int at = lines.FindIndex(start + 1, end - start - 1,
+                    l => !l.TrimStart().StartsWith("#") && l.Contains("=") && l.Substring(0, l.IndexOf('=')).Trim() == key);
+                if (at >= 0) lines[at] = entry;
+                else lines.Insert(start + 1, entry);
+            }
+            return string.Join("\r\n", lines) + "\r\n";
         }
 
         private void Put(Record record, string part, string relative, byte[] content)
@@ -428,6 +495,13 @@ namespace OneMillionCoins5Mio.Installer
                 stream.CopyTo(memory);
                 return memory.ToArray();
             }
+        }
+
+        /// <summary>Text einer Datei aus ihren Bytes, wie File.ReadAllText (UTF-8, Byte-Order-Mark erkannt).</summary>
+        private static string Text(byte[] data)
+        {
+            using (var reader = new StreamReader(new MemoryStream(data), System.Text.Encoding.UTF8, true))
+                return reader.ReadToEnd();
         }
 
         private static string Sha256(byte[] data)

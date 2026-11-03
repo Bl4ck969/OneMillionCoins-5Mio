@@ -24,7 +24,7 @@ namespace OneMillionCoins5Mio.Installer
 
 • Offline-Modus: Der Modus „5 Millionen“ sendet nichts an Steam – keine Bestenlisten, keine Erfolge, keine Steam Cloud. Er hat einen eigenen Spielstand unter %LOCALAPPDATA%\OneMillionCoins-5Mio. Der normale Spielstand wird nicht angefasst, das normale Spiel bleibt unverändert.
 
-• Spielversion: Die Mod ist nur mit Version {0} geprüft. Aktualisiert Steam das Spiel, schaltet sie sich ab, bis es eine passende Fassung der Mod gibt; das Spiel läuft dann unverändert weiter.
+• Spielversion: Die Mod ist mit Version {0} geprüft. Auf einer anderen Version – etwa nach einem Steam-Update – bleibt sie zunächst aus, und das Spiel läuft unverändert. Im Hauptmenü unten links lässt sie sich für genau diese Version trotzdem einschalten, auf eigene Gefahr; nach dem nächsten Update fragt sie erneut. Oder du wartest auf eine passende Fassung der Mod.
 
 • Nutzung auf eigene Gefahr: Soweit gesetzlich zulässig, wird keine Haftung für Schäden übernommen, etwa für verlorene Spielstände oder Folgen für dein Steam-Konto.
 
@@ -41,7 +41,7 @@ namespace OneMillionCoins5Mio.Installer
 
 • Offline mode: The ""5 million"" mode sends nothing to Steam – no leaderboards, no achievements, no Steam Cloud. It keeps its own save under %LOCALAPPDATA%\OneMillionCoins-5Mio. Your normal save is not touched, and the normal game stays unchanged.
 
-• Game version: The mod is only tested with version {0}. When Steam updates the game, the mod switches itself off until a matching version of the mod is available; the game keeps running unmodified.
+• Game version: The mod is tested with version {0}. On any other version – for example after a Steam update – it stays off at first, and the game runs unmodified. In the main menu, bottom left, you can switch it on anyway for exactly that version, at your own risk; after the next update it asks again. Or you wait for a matching version of the mod.
 
 • Use at your own risk: To the extent permitted by law, no liability is accepted for any damage, such as lost saves or consequences for your Steam account.
 

@@ -16,6 +16,8 @@ namespace OneMillionCoins5Mio.Installer
   --pruefen                                       Spielordner und Version prüfen / check folder and version
   --spieldateien                                  Spielordner gegen Steams Dateiliste / verify against Steam's file list
   --installieren --einverstanden                  installieren, Hinweis akzeptiert / install, notice accepted
+    [--ungeprueft]                                auch auf nicht geprüfter Spielversion, Mod dort eingeschaltet /
+                                                  also on an untested game version, mod switched on there
   --deinstallieren [--spielstaende-loeschen]      entfernen, optional mit Mod-Spielständen / remove, optionally with mod saves
   --spielordner <Pfad>                            statt automatischer Suche / instead of automatic search
   --englisch                                      englische Texte / English texts
@@ -105,7 +107,13 @@ Rückgabe / exit code: 0 ok, 1 Fehler / error, 2 nicht möglich / not possible, 
                     Console.WriteLine(L("Installiert wird nur mit --einverstanden.", "Installs only with --einverstanden (\"I agree\")."));
                     return 3;
                 }
-                new Setup(game.Folder, saves, Console.WriteLine).Install();
+                if (check.Untested && !flag("--ungeprueft"))
+                {
+                    Console.WriteLine(L("Diese Spielversion ist nicht geprüft. Installieren und die Mod auf ihr einschalten – auf eigene Gefahr – mit --ungeprueft.",
+                        "This game version is not tested. To install and switch the mod on for it – at your own risk – add --ungeprueft."));
+                    return 2;
+                }
+                new Setup(game.Folder, saves, Console.WriteLine).Install(releaseUntested: check.Untested);
                 return 0;
             }
             if (!check.CanUninstall) return 2;

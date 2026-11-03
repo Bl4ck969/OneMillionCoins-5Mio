@@ -193,13 +193,40 @@ namespace OneMillionCoins5Mio.Installer
         {
             using (var dialog = DisclaimerDialog())
                 if (dialog.ShowDialog(this) != DialogResult.OK) return;
+            // Nicht geprüfter Spielstand (meist: Steam hat das Spiel aktualisiert): Der Spieler entscheidet, ob die Mod darauf läuft.
+            bool release = false;
+            if (check.Untested)
+            {
+                var answer = MessageBox.Show(this, L(
+                        $"Diese Spielversion ist nicht geprüft – geprüft ist die Mod mit {ReleaseInfo.TestedVersions}.\n\n" +
+                        "Die Mod greift an Stellen im Spielcode ein, die sich mit einem Update geändert haben können. Möglich sind Fehler im Gebäude, " +
+                        "ein Absturz oder ein unbrauchbarer Spielstand im 5-Mio.-Modus, im schlimmsten Fall auch Fehler im normalen Spiel.\n\n" +
+                        "Soll die Mod auf dieser Version trotzdem laufen?\n\n" +
+                        "Ja – installieren und einschalten (auf eigene Gefahr)\n" +
+                        "Nein – installieren, aber ausgeschaltet lassen; einschalten geht später im Hauptmenü des Spiels unten links\n" +
+                        "Abbrechen – nichts installieren",
+                        $"This game version is not tested – the mod is tested with {ReleaseInfo.TestedVersions}.\n\n" +
+                        "The mod hooks into places in the game's code that an update may have changed. Possible results are glitches in the building, " +
+                        "a crash or an unusable save in 5 million mode, in the worst case also glitches in the normal game.\n\n" +
+                        "Should the mod run on this version anyway?\n\n" +
+                        "Yes – install and switch on (at your own risk)\n" +
+                        "No – install, but leave it switched off; you can switch it on later in the game's main menu, bottom left\n" +
+                        "Cancel – install nothing"),
+                    Title, MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                if (answer == DialogResult.Cancel) return;
+                release = answer == DialogResult.Yes;
+            }
+            string howTo = L("Im Hauptmenü des Spiels rechts neben „Speicherplatz“ die Auswahl „Tresor“ auf „5 Millionen · Mod (offline)“ stellen, dann „Neues Spiel“.",
+                "In the game's main menu, switch \"Vault\" (next to the save slot) to \"5 million · mod (offline)\", then start a new game.");
+            string done = !check.Untested ? L("Die Mod ist installiert. ", "The mod is installed. ") + howTo
+                : release ? L("Die Mod ist installiert und für diese Spielversion eingeschaltet. ", "The mod is installed and switched on for this game version. ") + howTo
+                : L("Die Mod ist installiert, aber ausgeschaltet, weil die Spielversion nicht geprüft ist. Einschalten: im Hauptmenü des Spiels unten links „Trotzdem einschalten …“, danach das Spiel neu starten.",
+                    "The mod is installed but switched off, because the game version is not tested. To switch it on: \"Switch on anyway …\" at the bottom left of the game's main menu, then restart the game.");
             Run(L("Installation …", "Installing …"), setup =>
             {
-                setup.Install();
+                setup.Install(release);
                 return new List<string>();
-            }, verifyAfter: false, done: L(
-                "Die Mod ist installiert. Im Hauptmenü des Spiels rechts neben „Speicherplatz“ die Auswahl „Tresor“ auf „5 Millionen · Mod (offline)“ stellen, dann „Neues Spiel“.",
-                "The mod is installed. In the game's main menu, switch \"Vault\" (next to the save slot) to \"5 million · mod (offline)\", then start a new game."));
+            }, verifyAfter: false, done: done);
         }
 
         private void Uninstall(object sender, EventArgs e)

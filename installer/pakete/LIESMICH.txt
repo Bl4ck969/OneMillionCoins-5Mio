@@ -15,15 +15,20 @@ Entwickler des Spiels und wird von ihm nicht unterstützt. Nutzung auf eigene Ge
 Voraussetzungen
 ---------------
 - Windows 10 oder 11, 64 Bit
-- „One Million Coins“ von Steam in Version {SPIELVERSION} (steht unten rechts im Hauptmenü)
+- „One Million Coins“ von Steam; geprüft mit Version {SPIELVERSION}. Die Versionsnummer steht unten rechts im
+  Hauptmenü, den Build zeigt Steam (Spiel → Eigenschaften → Updates). Auf anderen Versionen siehe „Spiel-Updates“.
 
 Installieren
 ------------
 1. Spiel beenden.
 2. OMC-5Mio-Installer.exe starten. Er findet das Spiel über Steam (sonst „Ändern …“ und den Spielordner wählen).
-3. „Installieren …“, den Hinweis lesen, Haken setzen, „Installieren“.
+3. „Installieren …“, den Hinweis lesen, Haken setzen, „Installieren“. Ist die Spielversion nicht geprüft, fragt der
+   Installer zusätzlich, ob die Mod trotzdem eingeschaltet werden soll.
 4. Im Spiel: Hauptmenü, rechts neben „Speicherplatz“ die Auswahl „Tresor“ auf „5 Millionen · Mod (offline)“
    stellen, dann „Neues Spiel“.
+
+Update von einer älteren Fassung: den neuen Installer starten, „Neu installieren …“. Spielstände, Bestenliste und
+Einstellungen der Mod bleiben erhalten.
 
 Windows kann beim Start warnen („Der Computer wurde durch Windows geschützt“), weil das Programm nicht signiert
 ist. Dann „Weitere Informationen“ → „Trotzdem ausführen“. Ob die Datei unverändert ist, zeigt die Prüfsumme in
@@ -45,9 +50,13 @@ Ohne Installer von Hand (nur wenn BepInEx mit der Mod kam): im Spielordner „Be
 
 Spiel-Updates
 -------------
-Steam-Updates lassen die Mod-Dateien in Ruhe. Die Mod prüft aber bei jedem Start die Spielversion: Ist es nicht
-Version {SPIELVERSION}, schaltet sie sich ab (Hinweis unten links im Hauptmenü) und das Spiel läuft unverändert,
-bis es eine passende Fassung der Mod gibt.
+Steam-Updates lassen die Mod-Dateien in Ruhe. Die Mod prüft aber bei jedem Start, ob sie den Stand des Spiels
+kennt. Kennt sie ihn nicht, bleibt sie zunächst aus, und das Spiel läuft unverändert. Unten links im Hauptmenü steht
+dann ein Hinweis mit dem Knopf „Trotzdem einschalten …“: Nach einer Warnung lädt die Mod ab dem nächsten Start auf
+genau diesem Stand – auf eigene Gefahr, denn ein Update kann Stellen ändern, an denen sie eingreift. Ausschalten geht
+dort ebenso. Nach dem nächsten Update fragt sie erneut. Lässt sie sich auf einem Stand gar nicht laden, nimmt sie
+alle Änderungen zurück, und das Spiel läuft unverändert. Eine geprüfte Fassung der Mod für das neue Update kommt
+in der Regel nach.
 
 Spielstände und Online-Dienste
 ------------------------------
@@ -80,15 +89,20 @@ the game's developer. Use at your own risk.
 Requirements
 ------------
 - Windows 10 or 11, 64-bit
-- "One Million Coins" from Steam, version {SPIELVERSION} (shown at the bottom right of the main menu)
+- "One Million Coins" from Steam; tested with version {SPIELVERSION}. The version number is shown at the bottom
+  right of the main menu, the build in Steam (game → Properties → Updates). For other versions see "Game updates".
 
 Installing
 ----------
 1. Quit the game.
 2. Run OMC-5Mio-Installer.exe. It finds the game through Steam (otherwise use "Change …" and pick the game folder).
-3. "Install …", read the notice, tick the box, "Install".
+3. "Install …", read the notice, tick the box, "Install". If the game version is not tested, the installer also
+   asks whether the mod should be switched on anyway.
 4. In the game's main menu, switch "Vault" (next to the save slot) to "5 million · mod (offline)", then start a
    new game.
+
+Updating from an older version: run the new installer, "Reinstall …". The mod's saves, leaderboard and settings
+are kept.
 
 Windows may warn when starting it ("Windows protected your PC") because the program is not signed. Choose
 "More info" → "Run anyway". SHA256SUMS.txt lets you check that the file is unchanged
@@ -110,9 +124,12 @@ By hand, without the installer (only if BepInEx came with the mod): delete "BepI
 
 Game updates
 ------------
-Steam updates leave the mod's files alone. The mod checks the game version every time the game starts: if it is
-not version {SPIELVERSION}, it switches itself off (a note appears at the bottom left of the main menu) and the game
-runs unmodified until a matching version of the mod is available.
+Steam updates leave the mod's files alone. The mod checks every time the game starts whether it knows this build of
+the game. If it does not, it stays off at first and the game runs unmodified. A note at the bottom left of the main
+menu then offers "Switch on anyway …": after a warning, the mod loads on exactly this build from the next start – at
+your own risk, since an update can change the places the mod hooks into. You can switch it off there as well. After
+the next update it asks again. If the mod cannot be loaded on a build at all, it undoes all its changes and the game
+runs unmodified. A tested version of the mod for the new update usually follows.
 
 Saves and online services
 -------------------------

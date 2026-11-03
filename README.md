@@ -25,11 +25,21 @@ and a local leaderboard. The normal 1 million game is unchanged.*
 3. Im Hauptmenü des Spiels die Auswahl **Tresor** auf „5 Millionen · Mod (offline)“ stellen. / *In the main menu,
    switch **Vault** to "5 million · mod (offline)".*
 
-Voraussetzung: Windows 10/11 64 Bit, Spielversion **1.2.2**. Nach einem Spiel-Update schaltet sich die Mod selbst ab,
-bis eine passende Fassung erscheint. Deinstallieren über denselben Installer stellt den Originalzustand her.
-Details in der `LIESMICH.txt` im Download. / *Requires Windows 10/11 64-bit and game version **1.2.2**. After a game
-update the mod switches itself off until a matching version is released. Uninstalling with the same installer
-restores the original state. Details in `LIESMICH.txt` in the download.*
+Update: den neuen Installer starten, „Neu installieren …“ – Spielstände, Bestenliste und Einstellungen bleiben. /
+*Updating: run the new installer, "Reinstall …" – saves, leaderboard and settings are kept.*
+
+Ohne Installer: `OMC-5Mio-<Version>-manuell.zip` enthält nur die Mod-DLL; dazu
+[BepInEx 5.4.23.6 x64](https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.6) selbst installieren, Anleitung im
+Paket. / *Without the installer: `…-manuell.zip` holds only the mod DLL; install BepInEx 5.4.23.6 x64 yourself,
+instructions inside.*
+
+Voraussetzung: Windows 10/11 64 Bit. Geprüft mit Spielversion **1.2.2** (Steam-Build 26290693 und 26367772 vom
+03.11.2026). Nach einem Spiel-Update bleibt die Mod zunächst aus; im Hauptmenü unten links lässt sie sich mit
+„Trotzdem einschalten …“ für genau diese Version einschalten, auf eigene Gefahr. Deinstallieren über denselben
+Installer stellt den Originalzustand her. Details in der `LIESMICH.txt` im Download. / *Requires Windows 10/11 64-bit.
+Tested with game version **1.2.2** (Steam builds 26290693 and 26367772 of 3 Nov 2026). After a game update the mod
+stays off at first; "Switch on anyway …" at the bottom left of the main menu turns it on for exactly that version,
+at your own risk. Uninstalling with the same installer restores the original state. Details in `LIESMICH.txt`.*
 
 **Offline:** Der 5-Mio.-Modus sendet nichts an Steam (keine Bestenlisten, Erfolge oder Steam Cloud) und hat einen
 eigenen Spielstand unter `%LOCALAPPDATA%\OneMillionCoins-5Mio\`. / *The 5 million mode sends nothing to Steam and
@@ -66,8 +76,14 @@ Entscheidungen, Prüfverfahren und Lehren: [ERKENNTNISSE.md](ERKENNTNISSE.md).
   Ast „Bewegung“ mit Jetpack, Einzahlautomaten in Gruppen über „Unterer Trichter“. Testmodus mit allen Fertigkeiten nur in
   Prüfläufen (eigener Test-Spielstand).
 - **Sprache:** Texte der Mod auf Deutsch oder Englisch nach Spielsprache.
-- **Versionsschutz:** Läuft das Spiel in einer nicht geprüften Version (nach einem Steam-Update), setzt die Mod keinen
-  Patch und zeigt im Hauptmenü einen Hinweis.
+- **Versionsschutz:** Läuft das Spiel in einer nicht geprüften Version (nach einem Steam-Update), setzt die Mod
+  zunächst keinen Patch und zeigt im Hauptmenü einen Hinweis mit „Trotzdem einschalten …“. Die Freigabe gilt nur für
+  genau diesen Stand (`[Kompatibilitaet] FreigegebeneVersion`, Kennung aus den Prüfsummen) und ab dem nächsten Start;
+  der Installer fragt bei einer ungeprüften Version ebenso. Scheitert das Patchen auf einem fremden Stand, nimmt die Mod
+  alle Patches zurück. Das Spiel zählt seine Versionsnummer nicht bei jedem Update hoch – unterschieden wird am
+  Steam-Build und an den Prüfsummen.
+- **Spielstände** der Vorversion laden weiter (geprüft 03.11.2026 mit einem Spielstand von Mod 1.0.0, Prüfmodus
+  `spielstand-laden`).
 - **Bekannt:** einzelne Stellen ohne Kollision (87 von 722.298 Prüfpunkten: ein Handlaufstab und ein Gitterfuß auf
   Etage 22/23).
 
@@ -99,9 +115,10 @@ Prüfaufnahme (startet das Spiel selbst und beendet es wieder; **nicht während 
 .\werkzeuge\pruefung.ps1 -Modus mod
 ```
 
-Weitere Modi: `original`, `inventar`, `leistung`, `leistung-original`, `spielstand`, `fertigkeiten`, `versionsschutz`,
-`bilder` (Aufnahmen für dieses README; Beschreibung in ERKENNTNISSE.md, Abschnitt 7). Die Testläufe steuern die Spielfigur selbst. Nach einem Spiel-Update
-laufen sie nur mit `[Kompatibilitaet] UngepruefteVersion = true` (Ablauf in ERKENNTNISSE.md, Abschnitt 9).
+Weitere Modi: `original`, `inventar`, `leistung`, `leistung-original`, `spielstand`, `spielstand-laden`, `fertigkeiten`,
+`versionsschutz`, `versionsschutz-fehler`, `bilder` (Aufnahmen für dieses README; Beschreibung in ERKENNTNISSE.md,
+Abschnitt 7). Die Testläufe steuern die Spielfigur selbst. Nach einem Spiel-Update laufen sie mit
+`[Kompatibilitaet] UngepruefteVersion = true` (Ablauf in ERKENNTNISSE.md, Abschnitt 9).
 
 Einstellungen: `<Spiel>\BepInEx\config\de.bl4ck969.onemillioncoins.5mio.cfg`, Erläuterung in ERKENNTNISSE.md.
 
@@ -111,11 +128,12 @@ Einstellungen: `<Spiel>\BepInEx\config\de.bl4ck969.onemillioncoins.5mio.cfg`, Er
 python -I werkzeuge\release.py
 ```
 
-Baut Plugin (ohne Kopie ins Spiel) und Installer, fährt `werkzeuge\installer_test.py` (8 Fälle an nachgebauten
+Baut Plugin (ohne Kopie ins Spiel) und Installer, fährt `werkzeuge\installer_test.py` (11 Fälle an nachgebauten
 Spielordnern) und legt `release\OMC-5Mio-<Version>.zip` an (Installer, LIESMICH de/en, Lizenzen, SHA-256).
 
-- Der Installer findet das Spiel über Steam, prüft Spielversion (nur geprüfte Stände aus `src\ReleaseInfo.cs`) und ob
-  das Spiel läuft, zeigt den Hinweis zur Mod und installiert erst nach Zustimmung.
+- Der Installer findet das Spiel über Steam, prüft die Spielversion gegen die geprüften Stände in `src\ReleaseInfo.cs`
+  und ob das Spiel läuft, zeigt den Hinweis zur Mod und installiert erst nach Zustimmung. Bei einer ungeprüften Version
+  fragt er: installieren und einschalten / installieren, aber aus lassen / abbrechen (Kommandozeile: `--ungeprueft`).
 - Er bringt BepInEx 5.4.23.6 mit (nur, wenn noch keins da ist), sichert jede Datei, die er überschreiben müsste, und
   protokolliert alles in `<Spiel>\5Mio-Mod-Installation\`.
 - **Deinstallieren** im selben Programm stellt den Zustand vor der Installation her, fragt, ob die Mod-Spielstände

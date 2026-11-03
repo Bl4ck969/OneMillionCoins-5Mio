@@ -1,6 +1,8 @@
 # Startet eine Prüfaufnahme (original | mod | inventar), wartet bis das Spiel sich beendet, setzt den Modus zurück
 # und zeigt die Mod-Zeilen aus dem BepInEx-Log.
-param([Parameter(Mandatory = $true)][ValidateSet("original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "fertigkeiten", "versionsschutz", "bilder")][string]$Modus)
+param([Parameter(Mandatory = $true)][ValidateSet("original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "spielstand-laden", "fertigkeiten", "versionsschutz", "versionsschutz-fehler", "bilder")][string]$Modus)
+# Versionsschutz vollständig: dreimal nacheinander – versionsschutz (aus → einschalten), versionsschutz (läuft mit Freigabe),
+# versionsschutz-fehler (Fehler beim Patchen → alles zurück, ausschalten). Siehe VersionNotice.Start.
 
 $game = "D:\SteamLibrary\steamapps\common\One Million Coins"
 $cfg = Join-Path $game "BepInEx\config\de.bl4ck969.onemillioncoins.5mio.cfg"

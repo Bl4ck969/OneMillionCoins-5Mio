@@ -30,10 +30,10 @@ namespace OneMillionCoins5Mio
 
         /// <summary>
         /// Prüfläufe schreiben in eine eigene Datei, damit die echte Liste frei von Testeinträgen bleibt. Der Prüfmodus „bilder“
-        /// zeigt die echte Liste und trägt nichts ein.
+        /// zeigt die echte Liste und trägt nichts ein, ebenso der Ladetest „spielstand-laden“.
         /// </summary>
         private static string FilePath => Path.Combine(OfflinePatches.ModFolder,
-            Plugin.CheckMode.Value == "aus" || PictureRun.Requested ? "bestenliste.tsv" : "bestenliste.pruefung.tsv");
+            Plugin.CheckMode.Value == "aus" || PictureRun.Requested || SaveTest.LoadRequested ? "bestenliste.tsv" : "bestenliste.pruefung.tsv");
 
         // Eine Zeile je Lauf, Tabulator-getrennt. JsonUtility schreibt Klassen aus dem Mod-Assembly nur als "{}" (26.10.2026).
         private static string Line(Entry e) => string.Join("\t", e.run, e.vault.ToString(CultureInfo.InvariantCulture), e.date,
@@ -83,7 +83,7 @@ namespace OneMillionCoins5Mio
         /// <summary>Beim Abschluss eines Mod-Laufs eintragen; ein Lauf (Kennung + Durchgang) steht nur einmal in der Liste.</summary>
         internal static void Record(GameProgressManager progress, SaveManager saves)
         {
-            if (!ModState.Active || progress == null || PictureRun.Requested) return;
+            if (!ModState.Active || progress == null || PictureRun.Requested || SaveTest.LoadRequested) return;
             try
             {
                 string run = RunId(saves);

@@ -26,9 +26,20 @@ namespace OneMillionCoins5Mio
         internal static ConfigEntry<float> LiftSpeed;
         internal static ConfigEntry<float> LiftRamp;
         internal static ConfigEntry<bool> AllowUntested;
+        internal static ConfigEntry<string> ReleasedBuild;
 
-        /// <summary>Spielversion ohne Prüfung, für den Hinweis im Hauptmenü; null = Mod aktiv.</summary>
-        private static string untestedVersion;
+        /// <summary>Kennung des laufenden Spielstands (ReleaseInfo.Fingerprint); im Prüfmodus „versionsschutz“ eine erfundene.</summary>
+        internal static string CurrentFingerprint;
+        /// <summary>Spielversion und Steam-Build zum Anzeigen, z. B. „1.2.2 (Build 26367772)“.</summary>
+        internal static string CurrentBuildLabel;
+        /// <summary>Datei der Mod-Einstellungen (für die Prüfung, ob eine Freigabe wirklich auf der Platte steht).</summary>
+        internal static string ConfigPath;
+
+        /// <summary>Kennung, die der Prüfmodus „versionsschutz“ vorspielt – trifft nie einen echten Spielstand.</summary>
+        internal const string SimulatedFingerprint = "pruefung-versionsschutz";
+
+        /// <summary>Zustand für den Hinweis im Hauptmenü; null = geprüfter Stand, kein Hinweis.</summary>
+        private static VersionNotice.Kind? notice;
 
         private void Awake()
         {
@@ -71,48 +82,83 @@ namespace OneMillionCoins5Mio
                     "steuert dabei die Spielfigur und beendet das Spiel danach. " +
                     "\"original\" = unverändertes Gebäude, \"mod\" = 5-Mio.-Gebäude, \"inventar\" = Teile-Inventar des Originals, " +
                     "\"leistung\" = 60 s Abgraben simulieren und Bildrate messen, \"leistung-original\" = dasselbe im unveränderten Gebäude, " +
-                    "\"spielstand\" = speichern, ins Menü, weiterspielen, \"fertigkeiten\" = geänderte Fertigkeiten und Taschenbank-Rückruf messen, " +
-                    "\"versionsschutz\" = so tun, als wäre die Spielversion nicht geprüft, Hauptmenü fotografieren, " +
+                    "\"spielstand\" = speichern, ins Menü, weiterspielen, \"spielstand-laden\" = vorhandenen Test-Spielstand laden (z. B. aus einer " +
+                    "früheren Fassung), ohne Speichern zurück, echte Bestenliste ansehen, \"fertigkeiten\" = geänderte Fertigkeiten und Taschenbank-Rückruf messen, " +
+                    "\"versionsschutz\" = so tun, als wäre die Spielversion nicht geprüft, Hauptmenü fotografieren, Einschalten und Ausschalten prüfen, " +
+                    "\"versionsschutz-fehler\" = dasselbe mit einem vorgetäuschten Fehler beim Patchen, " +
                     "\"bilder\" = Aufnahmen für README und Release. Alles offline.",
-                    new AcceptableValueList<string>("aus", "original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "fertigkeiten", "versionsschutz", "bilder")));
+                    new AcceptableValueList<string>("aus", "original", "mod", "inventar", "leistung", "leistung-original", "spielstand", "spielstand-laden", "fertigkeiten",
+                        "versionsschutz", "versionsschutz-fehler", "bilder")));
             // Gespeicherte Werte bleiben; die Voreinstellungen gelten für neue Installationen (30.10.2026, vor der Veröffentlichung).
             CheckFolder = Config.Bind("Pruefung", "Ordner", System.IO.Path.Combine(Paths.BepInExRootPath, "pruefung"), "Zielordner der Prüfaufnahmen.");
             PerformanceAlways = Config.Bind("Prototyp", "LeistungAuchImNormalspiel", false,
                 "Schreibt die Leistungswerte auch im normalen Spiel ins Log (nur zum Vergleich, ändert nichts am Spiel).");
             AllowUntested = Config.Bind("Kompatibilitaet", "UngepruefteVersion", false,
-                "Mod auch auf einer Spielversion laden, auf der sie nicht geprüft ist. Nur für Prüfläufe nach einem Spiel-Update.");
+                "Mod auf jeder nicht geprüften Spielversion laden, ohne zu fragen. Für Prüfläufe nach einem Spiel-Update; " +
+                "als Spieler genügt FreigegebeneVersion (Knopf im Hauptmenü).");
+            ReleasedBuild = Config.Bind("Kompatibilitaet", "FreigegebeneVersion", "",
+                "Kennung eines nicht geprüften Spielstands, auf dem die Mod trotzdem läuft – auf eigene Gefahr. Wird im Hauptmenü " +
+                "(\"Trotzdem einschalten …\") oder vom Installer eingetragen, leer = keiner. Nach dem nächsten Spiel-Update passt sie nicht mehr: " +
+                "Dann bleibt die Mod wieder aus und fragt neu.");
+            ConfigPath = Config.ConfigFilePath;
 
             // Nach einem Steam-Update kann ein Patch an anderer Stelle greifen als gedacht – auch im Original mit Bestenlisten.
-            // Auf einem nicht geprüften Stand bleibt das Spiel deshalb ganz unverändert (30.10.2026).
-            // Prüfmodus „versionsschutz“ spielt eine unbekannte Version vor – so lässt sich der Hinweis ohne Spiel-Update prüfen.
-            bool simulate = CheckMode.Value == "versionsschutz";
+            // Auf einem nicht geprüften Stand bleibt das Spiel deshalb zunächst unverändert (30.10.2026). Seit 03.11.2026 kann
+            // der Spieler genau diesen Stand im Hauptmenü freigeben (Bl4ck969: „nicht so radikal … dass man es trotzdem zum
+            // Laufen bekommt“). Prüfmodus „versionsschutz“ spielt einen unbekannten Stand mit erfundener Kennung vor.
+            bool simulate = CheckMode.Value == "versionsschutz" || CheckMode.Value == "versionsschutz-fehler";
             var build = simulate ? null : ReleaseInfo.Identify(Paths.GameRootPath);
-            if (build == null && (!AllowUntested.Value || simulate))
+            CurrentFingerprint = simulate ? SimulatedFingerprint : ReleaseInfo.Fingerprint(Paths.GameRootPath);
+            string steamBuild = ReleaseInfo.SteamBuildOf(Paths.GameRootPath);
+            CurrentBuildLabel = Application.version + (steamBuild != null ? " (Build " + steamBuild + ")" : "");
+            if (build == null)
             {
-                Log.LogWarning($"Spielversion {Application.version} ist nicht geprüft (geprüft: {ReleaseInfo.TestedVersions}). " +
-                    "Mod inaktiv, das Spiel läuft unverändert." + (simulate ? " (Prüfmodus versionsschutz)" : ""));
-                untestedVersion = Application.version;
-                SceneManager.sceneLoaded += ShowVersionNotice;
+                if (!Released)
+                {
+                    Log.LogWarning($"Spielversion {CurrentBuildLabel} ist nicht geprüft (geprüft: {ReleaseInfo.TestedVersions}). " +
+                        "Mod aus, das Spiel läuft unverändert; einschalten über das Hauptmenü." + (simulate ? " (Prüfmodus " + CheckMode.Value + ")" : ""));
+                    ShowNotice(VersionNotice.Kind.Off);
+                    return;
+                }
+                Log.LogWarning($"Spielversion {CurrentBuildLabel} ist NICHT geprüft – vom Spieler freigegeben ({(AllowUntested.Value && !simulate ? "UngepruefteVersion" : "FreigegebeneVersion")}), Mod lädt trotzdem.");
+                notice = VersionNotice.Kind.Untested;
+            }
+            else
+            {
+                Log.LogInfo($"Spielversion {build.Version} (Build {build.SteamBuild}): geprüft.");
+            }
+
+            // Fehlt auf einem fremden Stand eine Methode oder ein Feld, wirft ein Modul. Dann alles zurücknehmen statt halb gepatcht
+            // weiterzulaufen – das Spiel ist danach wieder das Original. Was ein Modul außerhalb von Harmony gesetzt hat (z. B. die
+            // HUD-Felder des Asts Bewegung), bleibt; im Original ohne Wirkung.
+            var harmony = new Harmony(Guid);
+            try
+            {
+                OfflinePatches.Apply(harmony);
+                WorldPatches.Apply(harmony);
+                GoalPatches.Apply(harmony);
+                HudPatches.Apply(harmony);
+                ElevatorPatches.Apply(harmony);
+                PilePatches.Apply(harmony);
+                PoseBand.Apply(harmony);
+                MenuPatches.Apply(harmony);
+                Leaderboard.Apply(harmony);
+                CompletionPatches.Apply(harmony);
+                SkillPatches.Apply(harmony);
+                MovementBranch.Apply(harmony);
+                if (CheckMode.Value == "versionsschutz-fehler")
+                    throw new System.InvalidOperationException("Prüfmodus versionsschutz-fehler: vorgetäuschter Fehler nach allen Modulen.");
+            }
+            catch (System.Exception e)
+            {
+                int applied = System.Linq.Enumerable.Count(harmony.GetPatchedMethods());
+                harmony.UnpatchSelf();
+                Log.LogError($"Mod konnte nicht geladen werden, {applied} Patches zurückgenommen – das Spiel läuft unverändert: {e}");
+                ShowNotice(VersionNotice.Kind.Failed);
                 return;
             }
-            Log.LogInfo(build != null
-                ? $"Spielversion {build.Version}: geprüft."
-                : $"Spielversion {Application.version}: NICHT geprüft, [Kompatibilitaet] UngepruefteVersion = true – Mod lädt trotzdem.");
-
-            var harmony = new Harmony(Guid);
-            OfflinePatches.Apply(harmony);
-            WorldPatches.Apply(harmony);
-            GoalPatches.Apply(harmony);
-            HudPatches.Apply(harmony);
-            ElevatorPatches.Apply(harmony);
-            PilePatches.Apply(harmony);
-            PoseBand.Apply(harmony);
-            MenuPatches.Apply(harmony);
-            Leaderboard.Apply(harmony);
-            CompletionPatches.Apply(harmony);
-            SkillPatches.Apply(harmony);
-            MovementBranch.Apply(harmony);
             Log.LogInfo($"Gepatchte Methoden: {System.Linq.Enumerable.Count(harmony.GetPatchedMethods())}.");
+            if (notice.HasValue) ShowNotice(notice.Value);
 
             SceneManager.activeSceneChanged += OnSceneChanged;
             Log.LogInfo(ModState.OfflineGuardsReady
@@ -124,7 +170,7 @@ namespace OneMillionCoins5Mio
         /// Testmodus des Spiels mit allen Fertigkeiten: nur noch in Prüfläufen (eigener Spielstand). Die Schalter
         /// „AlleFertigkeiten“/„TestPunkte“ für das normale Spiel sind seit 29.10.2026 entfernt (Bl4ck969: Start bei null).
         /// </summary>
-        internal static bool TestLoadout => CheckMode.Value != "aus";
+        internal static bool TestLoadout => CheckMode.Value != "aus" && CheckMode.Value != "spielstand-laden";
 
         /// <summary>
         /// Hinweis erst nach dem Laden einer Szene anlegen. Der Chainloader läuft in Application..cctor; eine Komponente mit
@@ -135,8 +181,19 @@ namespace OneMillionCoins5Mio
         private static void ShowVersionNotice(Scene scene, LoadSceneMode mode)
         {
             SceneManager.sceneLoaded -= ShowVersionNotice;
-            VersionNotice.Show(untestedVersion);
+            VersionNotice.Show(notice.Value);
         }
+
+        private static void ShowNotice(VersionNotice.Kind kind)
+        {
+            notice = kind;
+            SceneManager.sceneLoaded += ShowVersionNotice;
+        }
+
+        /// <summary>Hat der Spieler den laufenden, nicht geprüften Stand freigegeben? Der Prüfmodus beachtet nur seine eigene Kennung.</summary>
+        internal static bool Released =>
+            (AllowUntested.Value && CurrentFingerprint != SimulatedFingerprint) ||
+            (CurrentFingerprint != null && ReleasedBuild.Value.Trim() == CurrentFingerprint);
 
         /// <summary>BepInEx.ConsoleManager ist intern: per Reflexion fragen, ob ein Konsolenfenster offen ist.</summary>
         private static bool ConsoleActive()
