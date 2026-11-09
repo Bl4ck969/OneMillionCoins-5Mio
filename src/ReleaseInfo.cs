@@ -12,7 +12,7 @@ namespace OneMillionCoins5Mio
     /// </summary>
     internal static class ReleaseInfo
     {
-        internal const string ModVersion = "1.1.0";
+        internal const string ModVersion = "1.1.1";
         internal const string PluginGuid = "de.bl4ck969.onemillioncoins.5mio";
 
         /// <summary>Mod-Spielstände unter %LOCALAPPDATA% (nicht LocalLow: das lädt Steam Cloud hoch).</summary>
@@ -51,6 +51,14 @@ namespace OneMillionCoins5Mio
                 Version = "1.2.2", SteamBuild = "26367772",
                 Code = "721beeb5361b4a6723253c8292887aabef291850804c44d9aaaf3713aa1490db",
                 Settings = "8fca7e72108ef1078b7841bbb2e4d69512a270396763252b375b5b5e5ca1ba19",
+            },
+            // Geprüft 09.11.2026 mit Mod 1.1.1: Steam-Update vom 09.11.2026, 07:12 (Sprache Japanisch, Schrift Noto Sans JP,
+            // Logo im Hauptmenü; keine gepatchte Methode geändert).
+            new GameBuild
+            {
+                Version = "1.2.2", SteamBuild = "26508511",
+                Code = "4f638a4969e501f066453b522c51236767e4c4f45497723ec1aa96a6d559c277",
+                Settings = "11ac8a2fddefee95c9cdbc16baabf62595ae717d12d30cda88ee0faa3973f16b",
             },
         };
 

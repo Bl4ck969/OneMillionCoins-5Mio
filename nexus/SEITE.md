@@ -16,7 +16,8 @@ Bei einer neuen Version: Version, Datei und Änderungen anpassen; die Seite selb
 | Author | `Bl4ck969` |
 | Tags | **AI-Generated Content** (Code und Installer mit Claude geschrieben), **AI Media** (Seitentext mit Claude geschrieben); dazu Gameplay/Offline, falls angeboten |
 | Adult content | nein |
-| Requirements | keine – der Installer bringt BepInEx 5.4.23.6 mit (nutzt ein vorhandenes BepInEx 5) |
+| Requirements | keine – der Installer bringt BepInEx 5.4.23.6 mit (nutzt ein vorhandenes BepInEx 5). Keine „Mod requirement (legacy)“: gälte für die ganze Mod, auch fürs Installer-Paket; die Voraussetzung des DLL-Pakets steht in dessen Beschreibung |
+| Third-party content | **Yes** – das Installer-Paket liefert BepInEx 5.4.23.6 (MIT) und UnityDoorstop 4.6.0 (LGPL-2.1) unverändert mit (beim Upload 1.1.0 stand dort zunächst „No“) |
 | Permissions | MIT-Lizenz: Weitergabe, Änderung und Nutzung in eigenen Mods erlaubt, mit Namensnennung |
 | Source | https://github.com/Bl4ck969/OneMillionCoins-5Mio |
 
@@ -50,7 +51,21 @@ Offline mode with a 25-floor vault and exactly 5,000,000 real coins: extended sk
 ## Description (BBCode)
 
 ```
-[b]Note / Hinweis:[/b] The file is being reviewed by Nexus – meanwhile, download it from [url=https://github.com/Bl4ck969/OneMillionCoins-5Mio/releases/tag/v1.1.0]GitHub[/url] (same file). / Die Datei wird von Nexus geprüft – bis dahin bitte von [url=https://github.com/Bl4ck969/OneMillionCoins-5Mio/releases/tag/v1.1.0]GitHub[/url] laden (dieselbe Datei).
+[center][size=6][b][color=#ff9933]⚠ DOWNLOAD ⚠[/color][/b][/size][/center]
+
+[center][size=4][b]The installer file is still being checked by Nexus.[/b] Until it is released, use one of these two – both are the tested version 1.1.0:[/size][/center]
+[list]
+[*][size=4][b]Installer (recommended):[/b] [url=https://github.com/Bl4ck969/OneMillionCoins-5Mio/releases/tag/v1.1.0]GitHub → OMC-5Mio-1.1.0.zip[/url][/size] – the same file as here, brings BepInEx along.
+[*][size=4][b]Mod DLL only:[/b] the file "OMC 5Mio 1.1.0 - Manual install"[/size] in the [b]Files[/b] tab – needs [url=https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.6]BepInEx 5.4.23.6 x64[/url], unpack into the game folder.
+[*][b]Updating from 1.0.0?[/b] Saves, leaderboard and settings are kept.
+[/list]
+
+[center][size=4][b]Die Installer-Datei wird noch von Nexus geprüft.[/b] Bis zur Freigabe eine dieser beiden nehmen – beide sind die geprüfte Version 1.1.0:[/size][/center]
+[list]
+[*][size=4][b]Installer (empfohlen):[/b] [url=https://github.com/Bl4ck969/OneMillionCoins-5Mio/releases/tag/v1.1.0]GitHub → OMC-5Mio-1.1.0.zip[/url][/size] – dieselbe Datei wie hier, bringt BepInEx mit.
+[*][size=4][b]Nur die Mod-DLL:[/b] die Datei „OMC 5Mio 1.1.0 - Manual install“[/size] unter [b]Files[/b] – braucht [url=https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.6]BepInEx 5.4.23.6 x64[/url], in den Spielordner entpacken.
+[*][b]Update von 1.0.0?[/b] Spielstände, Bestenliste und Einstellungen bleiben erhalten.
+[/list]
 
 [line]
 
@@ -143,9 +158,30 @@ BepInEx-Archiv) und wird es voraussichtlich wieder. Das DLL-Paket hat weder EXE 
 | Version | `1.1.0` | `1.1.0` |
 | Category | Main file | Main file |
 | Mod manager download | aus (Installer) | aus (eigene Ordnerstruktur `BepInEx\plugins\…`, in den Spielordner entpacken) |
-| Description | `Installer with BepInEx 5.4.23.6. Unpack, quit the game, run OMC-5Mio-Installer.exe.` | `Mod DLL only, no installer. Needs BepInEx 5.4.23.6 x64. Unpack into the game folder.` |
+| Description | siehe unten (235 Zeichen) | siehe unten (179 Zeichen) |
+
+Beschreibungen der Dateien (zweisprachig, unter 250 Zeichen – Nexus kürzt kurze Felder bei rund 250):
+
+Installer-Paket:
+```
+Installer (recommended), includes BepInEx 5.4.23.6. Quit the game, run OMC-5Mio-Installer.exe. Updates keep saves. / Installer (empfohlen), mit BepInEx 5.4.23.6. Spiel beenden, OMC-5Mio-Installer.exe starten. Update behält Spielstände.
+```
+
+DLL-Paket:
+```
+Mod DLL only, no installer. Needs BepInEx 5.4.23.6 x64. Unpack into the game folder. / Nur die Mod-DLL, ohne Installer. Braucht BepInEx 5.4.23.6 x64. In den Spielordner entpacken.
+```
 
 Beide Dateien sind dieselben wie im GitHub-Release v1.1.0; die DLL darin ist in beiden die geprüfte (`98acdb60…`).
+
+## Changelog 1.1.1 (09.11.2026; bei 1.1.1 Dateien, Version und Download-Kasten oben auf 1.1.1 stellen)
+
+```
+- Works with the One Million Coins update of 9 Nov 2026 (Steam build 26508511, Japanese language; the game still shows version 1.2.2). No other changes – saves, leaderboard and settings stay as they are.
+- Läuft mit dem Spiel-Update vom 09.11.2026 (Steam-Build 26508511, Sprache Japanisch; das Spiel zeigt weiter Version 1.2.2). Sonst keine Änderungen – Spielstände, Bestenliste und Einstellungen bleiben.
+```
+
+Paket 1.1.1 (gebaut 09.11.2026): `release\OMC-5Mio-1.1.1.zip` (SHA-256 `8ef3f716…`, EXE `2a96f7e7…`), `release\OMC-5Mio-1.1.1-manuell.zip` (`1131c835…`), DLL in beiden `ecfba920…`.
 
 ## Changelog 1.1.0 (Nexus: „Changelogs“ der Version)
 
@@ -153,6 +189,11 @@ Beide Dateien sind dieselben wie im GitHub-Release v1.1.0; die DLL darin ist in 
 - Works with the One Million Coins update of 3 Nov 2026 (Steam build 26367772; the game still shows version 1.2.2).
 - Soft version protection: on an untested game version the mod stays off until you choose "Switch on anyway …" in the main menu; the installer asks instead of refusing. If the mod cannot load, it undoes all its changes.
 - Updating with the installer keeps saves, leaderboard and mod settings. Saves from 1.0.0 load unchanged.
+- New: a second file with only the mod DLL, for installing by hand.
+- Läuft mit dem Spiel-Update vom 03.11.2026 (Steam-Build 26367772; das Spiel zeigt weiter Version 1.2.2).
+- Weicher Versionsschutz: Auf einer ungeprüften Spielversion bleibt die Mod aus, bis du im Hauptmenü „Trotzdem einschalten …“ wählst; der Installer fragt, statt zu sperren. Lässt sich die Mod nicht laden, nimmt sie alle Änderungen zurück.
+- Update mit dem Installer behält Spielstände, Bestenliste und Einstellungen. Spielstände von 1.0.0 laden unverändert.
+- Neu: eine zweite Datei nur mit der Mod-DLL für die Installation von Hand.
 ```
 
 Die alte Datei 1.0.0 als „Old version“ einordnen (nicht löschen). Den Quarantäne-Hinweis oben in der Beschreibung erst nach der Freigabe entfernen.
